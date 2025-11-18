@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Health Results - PredictAI Health</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    <custom-navbar></custom-navbar>
+    
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">Your Health Risk Assessment</h1>
+                <p class="text-gray-600">Generated on <span id="result-date"></span></p>
+            </div>
+            
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Risk Scores</h2>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-700">Malaria</span>
+                            <span class="font-medium" id="malaria-score">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="malaria-bar" class="bg-red-500 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-700">Diabetes</span>
+                            <span class="font-medium" id="diabetes-score">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="diabetes-bar" class="bg-yellow-500 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-700">Respiratory Infection</span>
+                            <span class="font-medium" id="respiratory-score">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="respiratory-bar" class="bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">AI Explanation</h2>
+                <div id="explanation" class="bg-gray-50 p-4 rounded-md text-gray-700">
+                    Loading explanation...
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="index.html" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-md text-center transition">
+                    <i data-feather="arrow-left" class="inline mr-2"></i>
+                    Start New Assessment
+                </a>
+                <button id="download-proof" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition flex items-center justify-center">
+                    <i data-feather="download" class="mr-2"></i>
+                    Download Proof
+                </button>
+            </div>
+        </div>
+    </main>
+    
+    <custom-footer></custom-footer>
+    
+    <script src="components/navbar.js"></script>
+    <script src="components/footer.js"></script>
+    <script src="script.js"></script>
+    <script>
+        feather.replace();
+        
+        // Simulate loaded results
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            document.getElementById('result-date').textContent = today.toLocaleDateString();
+            
+            // Mock data - in production this would come from API
+            setTimeout(() => {
+                document.getElementById('malaria-score').textContent = '65%';
+                document.getElementById('malaria-bar').style.width = '65%';
+                document.getElementById('diabetes-score').textContent = '12%';
+                document.getElementById('diabetes-bar').style.width = '12%';
+                document.getElementById('respiratory-score').textContent = '28%';
+                document.getElementById('respiratory-bar').style.width = '28%';
+                
+                document.getElementById('explanation').innerHTML = `
+                    <p class="mb-2">Based on your reported symptoms (fever, headache, fatigue) and duration (3 days), there is a moderate risk of malaria.</p>
+                    <p class="mb-2">Your diabetes risk remains low given your age and absence of typical symptoms.</p>
+                    <p>Consider consulting a healthcare provider for malaria testing if symptoms persist or worsen.</p>
+                `;
+            }, 500);
+            
+            document.getElementById('download-proof').addEventListener('click', () => {
+                showToast('Generating and downloading your health proof...', 'info');
+                // In production: Generate and download ZK proof
+            });
+        });
+    </script>
+</body>
+</html>
