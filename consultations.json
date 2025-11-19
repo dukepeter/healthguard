@@ -1,4 +1,10 @@
 {
-  "messages": []
+  "messages": [
+    {
+      "timestamp": "...",
+      "patientMessage": "...",
+      "assessment": {...},
+      "doctorReply": "Doctor will review shortly…"
+    }
+  ]
 }
-
