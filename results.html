@@ -1,228 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health Assessment Results</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HealthGuard – Your Results</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+
+    <style>
+        .bar {
+            height: 10px;
+            border-radius: 5px;
+        }
+        .modal-bg {
+            background: rgba(0, 0, 0, 0.6);
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-10 max-w-3xl">
 
-    <main class="container mx-auto px-4 py-12 max-w-3xl">
-        <div class="bg-white p-8 rounded-xl shadow-lg">
-            
-            <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
-                Your Health Assessment Results
-            </h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Your Health Assessment</h1>
+        <p class="text-gray-600 mb-8">Based on your symptoms, here are your risk indicators:</p>
 
-            <!-- RESULT SCORES -->
-            <div class="space-y-6">
-                
-                <!-- Malaria -->
-                <div>
-                    <div class="flex justify-between mb-1">
-                        <span class="font-semibold text-gray-700">Malaria Risk</span>
-                        <span id="malaria-score" class="font-bold text-blue-600">0%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 h-3 rounded">
-                        <div id="malaria-bar" class="bg-blue-600 h-3 rounded" style="width: 0%"></div>
-                    </div>
-                </div>
+        <div class="space-y-6">
 
-                <!-- Diabetes -->
-                <div>
-                    <div class="flex justify-between mb-1">
-                        <span class="font-semibold text-gray-700">Diabetes Risk</span>
-                        <span id="diabetes-score" class="font-bold text-purple-600">0%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 h-3 rounded">
-                        <div id="diabetes-bar" class="bg-purple-600 h-3 rounded" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <!-- Respiratory -->
-                <div>
-                    <div class="flex justify-between mb-1">
-                        <span class="font-semibold text-gray-700">Respiratory Infection Risk</span>
-                        <span id="respiratory-score" class="font-bold text-green-600">0%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 h-3 rounded">
-                        <div id="respiratory-bar" class="bg-green-600 h-3 rounded" style="width: 0%"></div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Explanation -->
-            <div class="bg-blue-50 p-4 rounded mt-6">
-                <h3 class="font-semibold mb-2 text-blue-700">Summary</h3>
-                <p id="explanation" class="text-gray-700">
-                    Loading analysis...
+            <!-- MALARIA -->
+            <div>
+                <p class="font-semibold text-gray-700 flex justify-between">
+                    <span>Malaria Risk</span>
+                    <span id="malaria-score">0%</span>
                 </p>
+                <div class="w-full bg-gray-200 rounded-full">
+                    <div id="malaria-bar" class="bar bg-red-500 w-0"></div>
+                </div>
             </div>
 
-            <p class="text-sm text-gray-500 mt-2 text-right">
-                Generated on: <span id="result-date"></span>
+            <!-- DIABETES -->
+            <div>
+                <p class="font-semibold text-gray-700 flex justify-between">
+                    <span>Diabetes Risk</span>
+                    <span id="diabetes-score">0%</span>
+                </p>
+                <div class="w-full bg-gray-200 rounded-full">
+                    <div id="diabetes-bar" class="bar bg-blue-500 w-0"></div>
+                </div>
+            </div>
+
+            <!-- RESPIRATORY -->
+            <div>
+                <p class="font-semibold text-gray-700 flex justify-between">
+                    <span>Respiratory Infection Risk</span>
+                    <span id="respiratory-score">0%</span>
+                </p>
+                <div class="w-full bg-gray-200 rounded-full">
+                    <div id="respiratory-bar" class="bar bg-green-500 w-0"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Explanation -->
+        <div class="bg-white shadow-md rounded-lg p-6 mt-8">
+            <h2 class="text-xl font-semibold mb-3">Summary</h2>
+            <p id="explanation" class="text-gray-700"></p>
+
+            <p class="text-sm text-gray-500 mt-4">
+                Assessment Date: <span id="result-date"></span>
             </p>
+        </div>
 
-            <!-- Doctor Reply Box -->
-            <div id="doctor-reply-box" class="hidden mt-6 p-4 bg-green-50 border border-green-300 rounded">
-                <h3 class="font-semibold text-green-700">Doctor’s Response</h3>
-                <p id="doctor-reply-text" class="text-gray-800 mt-2"></p>
-            </div>
 
-            <!-- Consult a Doctor Button -->
-            <button 
-                onclick="openDoctorModal()"
-                class="w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition">
+        <!-- Doctor Consultation Section -->
+        <div class="bg-white shadow-md rounded-lg p-6 mt-10">
+            <h2 class="text-xl font-semibold mb-4">Need Further Assistance?</h2>
+            <p class="text-gray-700 mb-4">You can consult a doctor anonymously and securely.</p>
+
+            <button id="consultBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg">
                 Consult a Doctor
             </button>
 
-            <!-- Buttons -->
-            <div class="flex justify-between mt-8">
-                <button 
-                    onclick="window.location.href='index.html'"
-                    class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded">
-                    Take Assessment Again
-                </button>
-
-                <button 
-                    onclick="downloadResults()"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                    Download Results
-                </button>
+            <div id="doctorReplyContainer" class="mt-6 hidden">
+                <h3 class="text-lg font-semibold mb-2">Doctor's Response</h3>
+                <p id="doctorResponse" class="text-gray-700 bg-gray-100 p-3 rounded-lg"></p>
             </div>
         </div>
-    </main>
 
-    <!-- Modal -->
-    <div id="doctor-modal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 class="text-xl font-bold mb-4">Send Message to Doctor</h2>
 
-            <textarea id="doctor-message-input"
-                class="w-full border border-gray-300 rounded p-3 h-32"
-                placeholder="Describe your concern... (No personal details needed)"></textarea>
+        <!-- Action Buttons -->
+        <div class="mt-10 flex gap-4">
 
-            <div class="flex justify-end gap-3 mt-4">
-                <button onclick="closeDoctorModal()" class="px-4 py-2 bg-gray-300 rounded">
-                    Cancel
-                </button>
-                <button onclick="sendMessageToDoctor()" 
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                    Send
-                </button>
-            </div>
+            <a href="index.html"
+               class="w-1/2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg text-center">
+                Take Assessment Again
+            </a>
+
+            <button
+                class="w-1/2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg">
+                Download Report (PDF)
+            </button>
         </div>
     </div>
 
+
+    <!-- DOCTOR CONSULTATION MODAL -->
+    <div id="consultModal" class="fixed inset-0 hidden modal-bg flex justify-center items-center">
+        <div class="bg-white w-full max-w-lg rounded-lg shadow-lg p-6 relative">
+
+            <button id="closeModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+                <i data-feather="x"></i>
+            </button>
+
+            <h2 class="text-2xl font-semibold mb-4">Consult a Doctor</h2>
+
+            <textarea id="patientMessage"
+                      class="w-full p-3 border border-gray-300 rounded-lg h-32"
+                      placeholder="Describe your concern..."></textarea>
+
+            <button id="sendToDoctorBtn"
+                class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full">
+                Send Message
+            </button>
+
+        </div>
+    </div>
+
+
 <script>
-/* =======================
-      LOAD RESULTS
-=========================*/
-const result = JSON.parse(sessionStorage.getItem("healthAssessment"));
+feather.replace();
 
-if (!result) {
-    window.location.href = "index.html";
+/* -----------------------------
+   LOAD ASSESSMENT FROM SESSION
+------------------------------*/
+function loadResults() {
+    const result = JSON.parse(sessionStorage.getItem("healthAssessment"));
+    if (!result) {
+        window.location.href = "index.html";
+        return;
+    }
+
+    const malariaPercent = Math.round(result.risk_scores.malaria * 100);
+    const diabetesPercent = Math.round(result.risk_scores.diabetes * 100);
+    const respPercent = Math.round(result.risk_scores.respiratory_infection * 100);
+
+    document.getElementById("malaria-score").textContent = malariaPercent + "%";
+    document.getElementById("diabetes-score").textContent = diabetesPercent + "%";
+    document.getElementById("respiratory-score").textContent = respPercent + "%";
+
+    document.getElementById("malaria-bar").style.width = malariaPercent + "%";
+    document.getElementById("diabetes-bar").style.width = diabetesPercent + "%";
+    document.getElementById("respiratory-bar").style.width = respPercent + "%";
+
+    document.getElementById("explanation").textContent = result.explanation;
+    document.getElementById("result-date").textContent = new Date().toLocaleDateString();
 }
 
-document.getElementById("result-date").textContent = new Date().toLocaleDateString();
+loadResults();
 
-// Format %
-const malaria = Math.round(result.risk_scores.malaria * 100);
-const diabetes = Math.round(result.risk_scores.diabetes * 100);
-const resp = Math.round(result.risk_scores.respiratory_infection * 100);
 
-// Update UI
-document.getElementById("malaria-score").textContent = malaria + "%";
-document.getElementById("malaria-bar").style.width = malaria + "%";
+/* -----------------------------
+   CONSULTATION MODAL LOGIC
+------------------------------*/
 
-document.getElementById("diabetes-score").textContent = diabetes + "%";
-document.getElementById("diabetes-bar").style.width = diabetes + "%";
+const consultBtn = document.getElementById("consultBtn");
+const consultModal = document.getElementById("consultModal");
+const closeModal = document.getElementById("closeModal");
+const sendToDoctorBtn = document.getElementById("sendToDoctorBtn");
 
-document.getElementById("respiratory-score").textContent = resp + "%";
-document.getElementById("respiratory-bar").style.width = resp + "%";
+consultBtn.onclick = () => consultModal.classList.remove("hidden");
+closeModal.onclick = () => consultModal.classList.add("hidden");
 
-document.getElementById("explanation").textContent = result.explanation;
 
-/* =========================
-   CHECK FOR DOCTOR REPLY
-===========================*/
-fetch("consultations.json")
-  .then((res) => res.json())
-  .then((data) => {
-      const entry = data.messages.find(
-        (m) => JSON.stringify(m.assessment) === JSON.stringify(result)
-      );
+/* -----------------------------
+   SEND MESSAGE TO LOCAL BACKEND
+------------------------------*/
+sendToDoctorBtn.onclick = async () => {
+    const message = document.getElementById("patientMessage").value.trim();
+    if (!message) {
+        alert("Please enter a message.");
+        return;
+    }
 
-      if (entry && entry.doctor_reply) {
-          document.getElementById("doctor-reply-box").classList.remove("hidden");
-          document.getElementById("doctor-reply-text").textContent = entry.doctor_reply;
-      }
-  })
-  .catch((err) => console.error("Error loading doctor reply:", err));
+    sendToDoctorBtn.disabled = true;
+    sendToDoctorBtn.textContent = "Sending...";
 
-/* =========================
-   CONSULT A DOCTOR MODAL
-===========================*/
-function openDoctorModal() {
-    document.getElementById("doctor-modal").classList.remove("hidden");
-}
+    const assessment = JSON.parse(sessionStorage.getItem("healthAssessment"));
 
-function closeDoctorModal() {
-    document.getElementById("doctor-modal").classList.add("hidden");
-}
+    try {
+        const response = await fetch("/api/localConsultation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                patientMessage: message,
+                assessment
+            })
+        });
 
-/* =========================
-  SEND MESSAGE TO DOCTOR
-===========================*/
-function sendMessageToDoctor() {
-    const message = document.getElementById("doctor-message-input").value.trim();
-    if (!message) return alert("Please type your message");
+        const data = await response.json();
 
-    fetch("/api/sendToDoctor", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            message,
-            assessment: result
-        })
-    })
-    .then(() => {
-        alert("Message sent to doctor. You will receive a response soon.");
-        closeDoctorModal();
-    })
-    .catch(err => {
-        alert("Error sending message.");
-        console.error(err);
-    });
-}
+        if (data.success) {
+            document.getElementById("doctorReplyContainer").classList.remove("hidden");
+            document.getElementById("doctorResponse").textContent =
+                data.entry.doctorReply;
+        } else {
+            document.getElementById("doctorResponse").textContent =
+                "Unable to send message at this time.";
+        }
+    } catch (e) {
+        console.error("Error:", e);
+        document.getElementById("doctorResponse").textContent =
+            "Network error sending message.";
+    }
 
-/* =========================
-   DOWNLOAD RESULTS
-===========================*/
-function downloadResults() {
-    const text = `
-Health Assessment Results
--------------------------
-Malaria Risk: ${malaria}%
-Diabetes Risk: ${diabetes}%
-Respiratory Infection Risk: ${resp}%
-
-Summary:
-${result.explanation}
-
-Generated on: ${new Date().toLocaleDateString()}
-    `.trim();
-
-    const blob = new Blob([text], { type: "text/plain" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "health_results.txt";
-    link.click();
-}
+    consultModal.classList.add("hidden");
+    sendToDoctorBtn.disabled = false;
+    sendToDoctorBtn.textContent = "Send Message";
+};
 </script>
 
 </body>
