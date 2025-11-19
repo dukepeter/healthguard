@@ -6,65 +6,110 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 p-8">
-    <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-        <h1 class="text-3xl font-bold mb-6 text-gray-800">Doctor Consultation Inbox</h1>
-        <p class="text-gray-600 mb-4">
-            This page shows all patient consultation requests stored in the system.
-            Later, this will be replaced with real WhatsApp doctor messaging or a secured dashboard.
-        </p>
+<body class="bg-gray-100 min-h-screen">
+    <div class="max-w-4xl mx-auto py-10 px-4">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h1 class="text-3xl font-bold mb-4 text-gray-800">Doctor Consultation Inbox</h1>
+            <p class="text-gray-600 mb-4 text-sm">
+                This inbox shows consultations saved on <strong>this device</strong> only.
+                For the MVP, this is useful for demos and local testing.
+                Later, this will be upgraded to a shared, secure backend for real doctors.
+            </p>
 
-        <div id="inbox" class="space-y-6 text-gray-800">
-            <p>Loading consultations...</p>
+            <div id="inbox" class="space-y-6 text-gray-800">
+                <p>Loading consultations...</p>
+            </div>
         </div>
     </div>
 
 <script>
-async function loadInbox() {
+const consultationsKey = "healthguardConsultations";
+
+function loadInbox() {
+    const inbox = document.getElementById("inbox");
+    const raw = localStorage.getItem(consultationsKey);
+
+    if (!raw) {
+        inbox.innerHTML = "<p class='text-gray-500'>No consultations saved on this device yet.</p>";
+        return;
+    }
+
+    let consultations;
     try {
-        const response = await fetch("consultations.json");
-        const data = await response.json();
+        consultations = JSON.parse(raw);
+    } catch (e) {
+        console.error("Error parsing consultations:", e);
+        inbox.innerHTML = "<p class='text-red-500'>Error reading stored consultations.</p>";
+        return;
+    }
 
-        const inbox = document.getElementById("inbox");
-        inbox.innerHTML = "";
+    if (!Array.isArray(consultations) || consultations.length === 0) {
+        inbox.innerHTML = "<p class='text-gray-500'>No consultations saved on this device yet.</p>";
+        return;
+    }
 
-        if (!data.messages || data.messages.length === 0) {
-            inbox.innerHTML = "<p class='text-gray-500'>No consultations yet.</p>";
-            return;
-        }
+    inbox.innerHTML = "";
 
-        data.messages.forEach(entry => {
+    consultations
+        .sort((a, b) => b.id - a.id) // latest first
+        .forEach(entry => {
             const box = document.createElement("div");
             box.className = "p-5 border rounded-lg bg-gray-50 shadow";
 
+            const ts = entry.timestamp
+                ? new Date(entry.timestamp).toLocaleString()
+                : "Unknown time";
+
+            const profile = entry.profile || {};
+            const assessment = entry.assessment || { risk_scores: {}, explanation: "" };
+            const scores = assessment.risk_scores || {};
+
+            const malaria = Math.round((scores.malaria || 0) * 100);
+            const diabetes = Math.round((scores.diabetes || 0) * 100);
+            const resp = Math.round((scores.respiratory_infection || 0) * 100);
+
             box.innerHTML = `
-                <p><strong class="text-gray-700">Time:</strong> ${new Date(entry.timestamp).toLocaleString()}</p>
+                <p class="text-sm text-gray-500 mb-1">${ts}</p>
 
-                <p class="mt-3"><strong class="text-gray-700">Patient Message:</strong><br>
-                <span class="text-gray-800">${entry.patientMessage}</span></p>
+                <div class="mb-3">
+                    <h2 class="font-semibold text-gray-800">Patient Profile</h2>
+                    <p class="text-gray-700 text-sm">
+                        Name: ${profile.name || "Not provided"}<br/>
+                        Age: ${profile.age || "Not provided"}<br/>
+                        Gender: ${profile.gender || "Not provided"}<br/>
+                        Email: ${profile.email || "Not provided"}
+                    </p>
+                </div>
 
-                <p class="mt-3"><strong class="text-gray-700">AI Assessment:</strong><br>
-                <span class="text-gray-800">${entry.assessment.explanation}</span></p>
+                <div class="mb-3">
+                    <h2 class="font-semibold text-gray-800">Patient Message</h2>
+                    <p class="text-gray-800 mt-1">${entry.patientMessage || "No message provided."}</p>
+                </div>
 
-                <p class="mt-3"><strong class="text-gray-700">Risk Levels:</strong></p>
-                <ul class="ml-6 list-disc text-gray-700">
-                    <li>Malaria: ${Math.round(entry.assessment.risk_scores.malaria * 100)}%</li>
-                    <li>Diabetes: ${Math.round(entry.assessment.risk_scores.diabetes * 100)}%</li>
-                    <li>Respiratory: ${Math.round(entry.assessment.risk_scores.respiratory_infection * 100)}%</li>
-                </ul>
+                <div class="mb-3">
+                    <h2 class="font-semibold text-gray-800">AI Assessment Summary</h2>
+                    <p class="text-gray-800 mt-1">${assessment.explanation || "No explanation available."}</p>
+                </div>
 
-                <p class="mt-3"><strong class="text-gray-700">Doctor Auto-Reply:</strong><br>
-                <span class="text-gray-800">${entry.doctorReply}</span></p>
+                <div class="mb-3">
+                    <h2 class="font-semibold text-gray-800">Risk Levels</h2>
+                    <ul class="ml-5 list-disc text-gray-800 text-sm mt-1">
+                        <li>Malaria: ${malaria}%</li>
+                        <li>Diabetes: ${diabetes}%</li>
+                        <li>Respiratory Infection: ${resp}%</li>
+                    </ul>
+                </div>
+
+                <div class="mb-1">
+                    <h2 class="font-semibold text-gray-800">Doctor Response (MVP)</h2>
+                    <p class="text-gray-800 mt-1">
+                        ${entry.doctorReply || "No response recorded yet in this MVP version."}
+                    </p>
+                </div>
             `;
 
             inbox.appendChild(box);
         });
-
-    } catch (err) {
-        console.error("Error loading inbox:", err);
-        document.getElementById("inbox").innerHTML =
-            "<p class='text-red-500'>Error loading data.</p>";
-    }
 }
 
 loadInbox();
@@ -72,4 +117,3 @@ loadInbox();
 
 </body>
 </html>
-
