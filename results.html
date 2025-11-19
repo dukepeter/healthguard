@@ -11,7 +11,7 @@
     <style>
         .bar {
             height: 10px;
-            border-radius: 5px;
+            border-radius: 999px;
         }
         .modal-bg {
             background: rgba(0, 0, 0, 0.6);
@@ -22,11 +22,14 @@
 <body class="bg-gray-50">
     <div class="container mx-auto px-4 py-10 max-w-3xl">
 
-        <h1 class="text-3xl font-bold text-gray-800 mb-4">Your Health Assessment</h1>
-        <p class="text-gray-600 mb-8">Based on your symptoms, here are your risk indicators:</p>
+        <!-- HEADER -->
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Your Health Assessment</h1>
+        <p class="text-gray-600 mb-8">
+            Based on the symptoms you provided, here are your current risk indicators.
+        </p>
 
-        <div class="space-y-6">
-
+        <!-- RISK BARS -->
+        <div class="space-y-6 bg-white p-6 rounded-xl shadow">
             <!-- MALARIA -->
             <div>
                 <p class="font-semibold text-gray-700 flex justify-between">
@@ -61,49 +64,99 @@
             </div>
         </div>
 
-        <!-- Explanation -->
+        <!-- SUMMARY -->
         <div class="bg-white shadow-md rounded-lg p-6 mt-8">
             <h2 class="text-xl font-semibold mb-3">Summary</h2>
-            <p id="explanation" class="text-gray-700"></p>
+            <p id="explanation" class="text-gray-700">
+                Loading your assessment summary...
+            </p>
 
             <p class="text-sm text-gray-500 mt-4">
                 Assessment Date: <span id="result-date"></span>
             </p>
         </div>
 
+        <!-- PATIENT PROFILE (LOCAL) -->
+        <div class="bg-white shadow-md rounded-lg p-6 mt-8">
+            <h2 class="text-xl font-semibold mb-3">Optional: Save Your Basic Details</h2>
+            <p class="text-gray-600 mb-4 text-sm">
+                This information stays on this device only and is used to personalize your reports
+                and consultations. You can skip it if you prefer.
+            </p>
 
-        <!-- Doctor Consultation Section -->
-        <div class="bg-white shadow-md rounded-lg p-6 mt-10">
-            <h2 class="text-xl font-semibold mb-4">Need Further Assistance?</h2>
-            <p class="text-gray-700 mb-4">You can consult a doctor anonymously and securely.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-700 mb-1" for="profile-name">Name</label>
+                    <input id="profile-name" type="text"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 mb-1" for="profile-age">Age</label>
+                    <input id="profile-age" type="number" min="1" max="120"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 mb-1" for="profile-gender">Gender</label>
+                    <select id="profile-gender"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                        <option value="other">Other / Prefer not to say</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 mb-1" for="profile-email">Email (optional)</label>
+                    <input id="profile-email" type="email"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+            </div>
+
+            <button id="saveProfileBtn"
+                    class="mt-4 bg-gray-800 hover:bg-black text-white font-semibold px-4 py-2 rounded-lg">
+                Save Profile on this Device
+            </button>
+            <p id="profileStatus" class="text-sm text-green-600 mt-2 hidden">
+                Profile saved.
+            </p>
+        </div>
+
+        <!-- DOCTOR CONSULTATION SECTION -->
+        <div class="bg-white shadow-md rounded-lg p-6 mt-8">
+            <h2 class="text-xl font-semibold mb-3">Need Further Assistance?</h2>
+            <p class="text-gray-700 mb-4">
+                You can submit your results and a short note for a doctor to review during testing
+                and demos. In this MVP version, your consultation is stored only on this device.
+            </p>
 
             <button id="consultBtn"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg">
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg">
                 Consult a Doctor
             </button>
 
             <div id="doctorReplyContainer" class="mt-6 hidden">
-                <h3 class="text-lg font-semibold mb-2">Doctor's Response</h3>
-                <p id="doctorResponse" class="text-gray-700 bg-gray-100 p-3 rounded-lg"></p>
+                <h3 class="text-lg font-semibold mb-2">Doctor Response (MVP Simulation)</h3>
+                <p id="doctorResponse" class="text-gray-700 bg-gray-100 p-3 rounded-lg">
+                </p>
             </div>
         </div>
 
-
-        <!-- Action Buttons -->
+        <!-- ACTION BUTTONS -->
         <div class="mt-10 flex gap-4">
-
             <a href="index.html"
                class="w-1/2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg text-center">
                 Take Assessment Again
             </a>
 
-            <button
-                class="w-1/2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg">
-                Download Report (PDF)
+            <button id="downloadReportBtn"
+                    class="w-1/2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg">
+                Download Report (Text)
             </button>
         </div>
     </div>
-
 
     <!-- DOCTOR CONSULTATION MODAL -->
     <div id="consultModal" class="fixed inset-0 hidden modal-bg flex justify-center items-center">
@@ -115,31 +168,38 @@
 
             <h2 class="text-2xl font-semibold mb-4">Consult a Doctor</h2>
 
+            <p class="text-sm text-gray-600 mb-3">
+                Please describe your main concern in your own words. Do not include your full name,
+                address, or any other identifying details here.
+            </p>
+
             <textarea id="patientMessage"
                       class="w-full p-3 border border-gray-300 rounded-lg h-32"
                       placeholder="Describe your concern..."></textarea>
 
             <button id="sendToDoctorBtn"
-                class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full">
+                    class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full">
                 Send Message
             </button>
 
         </div>
     </div>
 
-
 <script>
 feather.replace();
 
-/* -----------------------------
+/* --------------------------------
    LOAD ASSESSMENT FROM SESSION
-------------------------------*/
+---------------------------------*/
+let assessmentResult = null;
+
 function loadResults() {
     const result = JSON.parse(sessionStorage.getItem("healthAssessment"));
     if (!result) {
         window.location.href = "index.html";
         return;
     }
+    assessmentResult = result;
 
     const malariaPercent = Math.round(result.risk_scores.malaria * 100);
     const diabetesPercent = Math.round(result.risk_scores.diabetes * 100);
@@ -159,11 +219,42 @@ function loadResults() {
 
 loadResults();
 
+/* --------------------------------
+   PATIENT PROFILE (LOCALSTORAGE)
+---------------------------------*/
+const profileKey = "healthguardProfile";
 
-/* -----------------------------
+function loadProfile() {
+    const saved = localStorage.getItem(profileKey);
+    if (!saved) return;
+
+    const profile = JSON.parse(saved);
+    if (profile.name) document.getElementById("profile-name").value = profile.name;
+    if (profile.age) document.getElementById("profile-age").value = profile.age;
+    if (profile.gender) document.getElementById("profile-gender").value = profile.gender;
+    if (profile.email) document.getElementById("profile-email").value = profile.email;
+}
+
+function saveProfile() {
+    const name = document.getElementById("profile-name").value.trim();
+    const age = document.getElementById("profile-age").value.trim();
+    const gender = document.getElementById("profile-gender").value;
+    const email = document.getElementById("profile-email").value.trim();
+
+    const profile = { name, age, gender, email };
+    localStorage.setItem(profileKey, JSON.stringify(profile));
+
+    const status = document.getElementById("profileStatus");
+    status.classList.remove("hidden");
+    status.textContent = "Profile saved on this device.";
+}
+
+document.getElementById("saveProfileBtn").onclick = saveProfile;
+loadProfile();
+
+/* --------------------------------
    CONSULTATION MODAL LOGIC
-------------------------------*/
-
+---------------------------------*/
 const consultBtn = document.getElementById("consultBtn");
 const consultModal = document.getElementById("consultModal");
 const closeModal = document.getElementById("closeModal");
@@ -172,51 +263,100 @@ const sendToDoctorBtn = document.getElementById("sendToDoctorBtn");
 consultBtn.onclick = () => consultModal.classList.remove("hidden");
 closeModal.onclick = () => consultModal.classList.add("hidden");
 
+/* --------------------------------
+   LOCAL CONSULTATION STORAGE
+---------------------------------*/
+const consultationsKey = "healthguardConsultations";
 
-/* -----------------------------
-   SEND MESSAGE TO LOCAL BACKEND
-------------------------------*/
-sendToDoctorBtn.onclick = async () => {
+sendToDoctorBtn.onclick = () => {
     const message = document.getElementById("patientMessage").value.trim();
     if (!message) {
         alert("Please enter a message.");
         return;
     }
+    if (!assessmentResult) {
+        alert("Missing assessment result. Please redo your assessment.");
+        return;
+    }
 
     sendToDoctorBtn.disabled = true;
-    sendToDoctorBtn.textContent = "Sending...";
+    sendToDoctorBtn.textContent = "Saving...";
 
-    const assessment = JSON.parse(sessionStorage.getItem("healthAssessment"));
+    const profileRaw = localStorage.getItem(profileKey);
+    const profile = profileRaw ? JSON.parse(profileRaw) : null;
 
-    try {
-        const response = await fetch("/api/localConsultation", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                patientMessage: message,
-                assessment
-            })
-        });
+    const existingRaw = localStorage.getItem(consultationsKey);
+    const consultations = existingRaw ? JSON.parse(existingRaw) : [];
 
-        const data = await response.json();
+    const newEntry = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        assessment: assessmentResult,
+        patientMessage: message,
+        profile: profile,
+        doctorReply: "Your case has been saved. In this MVP demo, a doctor can review it from the local inbox on this device."
+    };
 
-        if (data.success) {
-            document.getElementById("doctorReplyContainer").classList.remove("hidden");
-            document.getElementById("doctorResponse").textContent =
-                data.entry.doctorReply;
-        } else {
-            document.getElementById("doctorResponse").textContent =
-                "Unable to send message at this time.";
-        }
-    } catch (e) {
-        console.error("Error:", e);
-        document.getElementById("doctorResponse").textContent =
-            "Network error sending message.";
-    }
+    consultations.push(newEntry);
+    localStorage.setItem(consultationsKey, JSON.stringify(consultations));
 
     consultModal.classList.add("hidden");
     sendToDoctorBtn.disabled = false;
     sendToDoctorBtn.textContent = "Send Message";
+
+    const replyContainer = document.getElementById("doctorReplyContainer");
+    const replyText = document.getElementById("doctorResponse");
+    replyContainer.classList.remove("hidden");
+    replyText.textContent = newEntry.doctorReply;
+
+    document.getElementById("patientMessage").value = "";
+};
+
+/* --------------------------------
+   DOWNLOAD REPORT (TEXT VERSION)
+---------------------------------*/
+document.getElementById("downloadReportBtn").onclick = () => {
+    if (!assessmentResult) {
+        alert("No assessment found. Please complete an assessment first.");
+        return;
+    }
+
+    const profileRaw = localStorage.getItem(profileKey);
+    const profile = profileRaw ? JSON.parse(profileRaw) : {};
+
+    const malariaPercent = Math.round(assessmentResult.risk_scores.malaria * 100);
+    const diabetesPercent = Math.round(assessmentResult.risk_scores.diabetes * 100);
+    const respPercent = Math.round(assessmentResult.risk_scores.respiratory_infection * 100);
+
+    const lines = [
+        "HealthGuard – Health Assessment Report",
+        "--------------------------------------",
+        "",
+        `Name: ${profile.name || "Not provided"}`,
+        `Age: ${profile.age || "Not provided"}`,
+        `Gender: ${profile.gender || "Not provided"}`,
+        `Email: ${profile.email || "Not provided"}`,
+        "",
+        `Assessment Date: ${new Date().toLocaleDateString()}`,
+        "",
+        "Risk Levels:",
+        `- Malaria: ${malariaPercent}%`,
+        `- Diabetes: ${diabetesPercent}%`,
+        `- Respiratory Infection: ${respPercent}%`,
+        "",
+        "Summary:",
+        assessmentResult.explanation,
+        "",
+        "Note: This is a preliminary AI-based risk assessment and is not a medical diagnosis.",
+        "Please consult a qualified healthcare professional for proper evaluation."
+    ];
+
+    const text = lines.join("\n");
+    const blob = new Blob([text], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "healthguard_assessment.txt";
+    link.click();
 };
 </script>
 
