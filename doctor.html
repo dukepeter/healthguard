@@ -1,1 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Doctor Inbox – HealthGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-8">
+    <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold mb-6 text-gray-800">Doctor Consultation Inbox</h1>
+        <p class="text-gray-600 mb-4">
+            This page shows all patient consultation requests stored in the system.
+            Later, this will be replaced with real WhatsApp doctor messaging or a secured dashboard.
+        </p>
+
+        <div id="inbox" class="space-y-6 text-gray-800">
+            <p>Loading consultations...</p>
+        </div>
+    </div>
+
+<script>
+async function loadInbox() {
+    try {
+        const response = await fetch("consultations.json");
+        const data = await response.json();
+
+        const inbox = document.getElementById("inbox");
+        inbox.innerHTML = "";
+
+        if (!data.messages || data.messages.length === 0) {
+            inbox.innerHTML = "<p class='text-gray-500'>No consultations yet.</p>";
+            return;
+        }
+
+        data.messages.forEach(entry => {
+            const box = document.createElement("div");
+            box.className = "p-5 border rounded-lg bg-gray-50 shadow";
+
+            box.innerHTML = `
+                <p><strong class="text-gray-700">Time:</strong> ${new Date(entry.timestamp).toLocaleString()}</p>
+
+                <p class="mt-3"><strong class="text-gray-700">Patient Message:</strong><br>
+                <span class="text-gray-800">${entry.patientMessage}</span></p>
+
+                <p class="mt-3"><strong class="text-gray-700">AI Assessment:</strong><br>
+                <span class="text-gray-800">${entry.assessment.explanation}</span></p>
+
+                <p class="mt-3"><strong class="text-gray-700">Risk Levels:</strong></p>
+                <ul class="ml-6 list-disc text-gray-700">
+                    <li>Malaria: ${Math.round(entry.assessment.risk_scores.malaria * 100)}%</li>
+                    <li>Diabetes: ${Math.round(entry.assessment.risk_scores.diabetes * 100)}%</li>
+                    <li>Respiratory: ${Math.round(entry.assessment.risk_scores.respiratory_infection * 100)}%</li>
+                </ul>
+
+                <p class="mt-3"><strong class="text-gray-700">Doctor Auto-Reply:</strong><br>
+                <span class="text-gray-800">${entry.doctorReply}</span></p>
+            `;
+
+            inbox.appendChild(box);
+        });
+
+    } catch (err) {
+        console.error("Error loading inbox:", err);
+        document.getElementById("inbox").innerHTML =
+            "<p class='text-red-500'>Error loading data.</p>";
+    }
+}
+
+loadInbox();
+</script>
+
+</body>
+</html>
 
