@@ -3,111 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Health Results - PredictAI Health</title>
-    <link rel="stylesheet" href="style.css">
+    <title>HealthGuard – Screening Results</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body class="bg-gray-50">
-    <custom-navbar></custom-navbar>
-    
-    <main class="container mx-auto px-4 py-8">
-        <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
-            <div class="text-center mb-8">
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">Your Health Risk Assessment</h1>
-                <p class="text-gray-600">Generated on <span id="result-date"></span></p>
+
+<!-- MAIN CONTAINER -->
+<div class="max-w-3xl mx-auto p-6">
+
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Your Health Screening Results</h1>
+
+    <!-- RESULTS BOX -->
+    <div class="bg-white shadow-lg p-6 rounded-xl mb-6">
+        <h2 class="text-xl font-semibold mb-4">Risk Assessment</h2>
+
+        <!-- Malaria -->
+        <div class="mb-4">
+            <p class="font-semibold">Malaria Risk</p>
+            <div class="w-full bg-gray-200 rounded h-3">
+                <div id="malaria-bar" class="h-3 bg-red-500 rounded"></div>
             </div>
-            
-            <div class="mb-8">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Risk Scores</h2>
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="text-gray-700">Malaria</span>
-                            <span class="font-medium" id="malaria-score">0%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div id="malaria-bar" class="bg-red-500 h-2.5 rounded-full" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="text-gray-700">Diabetes</span>
-                            <span class="font-medium" id="diabetes-score">0%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div id="diabetes-bar" class="bg-yellow-500 h-2.5 rounded-full" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="text-gray-700">Respiratory Infection</span>
-                            <span class="font-medium" id="respiratory-score">0%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div id="respiratory-bar" class="bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mb-8">
-                <h2 class="text-xl font-semibold text-gray-800 mb-2">AI Explanation</h2>
-                <div id="explanation" class="bg-gray-50 p-4 rounded-md text-gray-700">
-                    Loading explanation...
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <a href="index.html" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-md text-center transition">
-                    <i data-feather="arrow-left" class="inline mr-2"></i>
-                    Start New Assessment
-                </a>
-                <button id="download-proof" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition flex items-center justify-center">
-                    <i data-feather="download" class="mr-2"></i>
-                    Download Proof
-                </button>
-            </div>
+            <p id="malaria-score" class="text-sm text-gray-600 mt-1"></p>
         </div>
-    </main>
-    
-    <custom-footer></custom-footer>
-    
-    <script src="components/navbar.js"></script>
-    <script src="components/footer.js"></script>
-    <script src="script.js"></script>
-    <script>
-        feather.replace();
-        
-        // Simulate loaded results
-        document.addEventListener('DOMContentLoaded', () => {
-            const today = new Date();
-            document.getElementById('result-date').textContent = today.toLocaleDateString();
-            
-            // Mock data - in production this would come from API
-            setTimeout(() => {
-                document.getElementById('malaria-score').textContent = '65%';
-                document.getElementById('malaria-bar').style.width = '65%';
-                document.getElementById('diabetes-score').textContent = '12%';
-                document.getElementById('diabetes-bar').style.width = '12%';
-                document.getElementById('respiratory-score').textContent = '28%';
-                document.getElementById('respiratory-bar').style.width = '28%';
-                
-                document.getElementById('explanation').innerHTML = `
-                    <p class="mb-2">Based on your reported symptoms (fever, headache, fatigue) and duration (3 days), there is a moderate risk of malaria.</p>
-                    <p class="mb-2">Your diabetes risk remains low given your age and absence of typical symptoms.</p>
-                    <p>Consider consulting a healthcare provider for malaria testing if symptoms persist or worsen.</p>
-                `;
-            }, 500);
-            
-            document.getElementById('download-proof').addEventListener('click', () => {
-                showToast('Generating and downloading your health proof...', 'info');
-                // In production: Generate and download ZK proof
-            });
-        });
-    </script>
+
+        <!-- Diabetes -->
+        <div class="mb-4">
+            <p class="font-semibold">Diabetes Risk</p>
+            <div class="w-full bg-gray-200 rounded h-3">
+                <div id="diabetes-bar" class="h-3 bg-blue-500 rounded"></div>
+            </div>
+            <p id="diabetes-score" class="text-sm text-gray-600 mt-1"></p>
+        </div>
+
+        <!-- Respiratory -->
+        <div class="mb-4">
+            <p class="font-semibold">Respiratory Infection Risk</p>
+            <div class="w-full bg-gray-200 rounded h-3">
+                <div id="respiratory-bar" class="h-3 bg-green-500 rounded"></div>
+            </div>
+            <p id="respiratory-score" class="text-sm text-gray-600 mt-1"></p>
+        </div>
+
+        <p id="explanation" class="mt-4 text-gray-700"></p>
+        <p id="result-date" class="text-sm text-gray-400 mt-2"></p>
+    </div>
+
+    <!-- CONSULT A DOCTOR BUTTON -->
+    <div class="text-center">
+        <button id="consult-btn"
+            class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md">
+            Consult a Doctor (Private & Anonymous)
+        </button>
+    </div>
+
+</div>
+
+<!-- MODAL -->
+<div id="consult-modal"
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden justify-center items-center p-4">
+
+    <div class="bg-white w-full max-w-md rounded-xl p-6 shadow-xl">
+        <h2 class="text-xl font-bold mb-2">Private Consultation</h2>
+        <p class="text-gray-600 text-sm mb-4">
+            Your identity stays protected. A certified doctor will respond anonymously via our platform.
+        </p>
+
+        <!-- Patient anonymous input -->
+        <label class="block text-sm font-medium mb-1">Message to Doctor</label>
+        <textarea id="doctor-message"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 h-24 focus:ring-2 focus:ring-blue-500 mb-4"
+            placeholder="Describe what you want the doctor to know..."></textarea>
+
+        <div class="flex justify-between mt-4">
+            <button id="cancel-modal"
+                class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md">
+                Cancel
+            </button>
+
+            <button id="send-doctor"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md">
+                Send
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT -->
+<script>
+/* Load assessment */
+const result = JSON.parse(sessionStorage.getItem('healthAssessment'));
+if (!result) window.location.href = "index.html";
+
+document.getElementById("malaria-score").textContent = result.risk_scores.malaria + "%";
+document.getElementById("malaria-bar").style.width = result.risk_scores.malaria + "%";
+
+document.getElementById("diabetes-score").textContent = result.risk_scores.diabetes + "%";
+document.getElementById("diabetes-bar").style.width = result.risk_scores.diabetes + "%";
+
+document.getElementById("respiratory-score").textContent = result.risk_scores.respiratory_infection + "%";
+document.getElementById("respiratory-bar").style.width = result.risk_scores.respiratory_infection + "%";
+
+document.getElementById("explanation").textContent = result.explanation;
+document.getElementById("result-date").textContent = new Date().toLocaleString();
+
+/* Modal logic */
+const modal = document.getElementById("consult-modal");
+document.getElementById("consult-btn").onclick = () => modal.classList.remove("hidden");
+document.getElementById("cancel-modal").onclick = () => modal.classList.add("hidden");
+
+/* Anonymous doctor message relay (MVP simulation) */
+document.getElementById("send-doctor").onclick = () => {
+
+    const message = document.getElementById("doctor-message").value.trim();
+
+    if (!message) {
+        alert("Please enter a message.");
+        return;
+    }
+
+    // Store locally (MVP simulation of backend storage)
+    const consult = {
+        message,
+        result,
+        timestamp: new Date().toISOString()
+    };
+
+    localStorage.setItem("pendingDoctorConsultation", JSON.stringify(consult));
+
+    alert("Your anonymous message has been sent. A doctor will reply soon.");
+
+    modal.classList.add("hidden");
+};
+</script>
+
 </body>
 </html>
