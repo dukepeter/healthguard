@@ -76,7 +76,7 @@
             </p>
         </div>
 
-        <!-- PATIENT PROFILE (LOCAL) -->
+        <!-- PATIENT PROFILE -->
         <div class="bg-white shadow-md rounded-lg p-6 mt-8">
             <h2 class="text-xl font-semibold mb-3">Optional: Save Your Basic Details</h2>
             <p class="text-gray-600 mb-4 text-sm">
@@ -139,8 +139,7 @@
 
             <div id="doctorReplyContainer" class="mt-6 hidden">
                 <h3 class="text-lg font-semibold mb-2">Doctor Response (MVP Simulation)</h3>
-                <p id="doctorResponse" class="text-gray-700 bg-gray-100 p-3 rounded-lg">
-                </p>
+                <p id="doctorResponse" class="text-gray-700 bg-gray-100 p-3 rounded-lg"></p>
             </div>
         </div>
 
@@ -185,180 +184,202 @@
         </div>
     </div>
 
-<script>
-feather.replace();
 
-/* --------------------------------
-   LOAD ASSESSMENT FROM SESSION
----------------------------------*/
-let assessmentResult = null;
+    <!-- SCRIPT -->
+    <script>
+    feather.replace();
 
-function loadResults() {
-    const result = JSON.parse(sessionStorage.getItem("healthAssessment"));
-    if (!result) {
-        window.location.href = "index.html";
-        return;
-    }
-    assessmentResult = result;
+    /* --------------------------------
+       LOAD REAL AI RESULTS
+    ---------------------------------*/
+    let assessmentResult = null;
 
-    const malariaPercent = Math.round(result.risk_scores.malaria * 100);
-    const diabetesPercent = Math.round(result.risk_scores.diabetes * 100);
-    const respPercent = Math.round(result.risk_scores.respiratory_infection * 100);
+    function loadResults() {
+        const raw = sessionStorage.getItem("healthAssessment");
 
-    document.getElementById("malaria-score").textContent = malariaPercent + "%";
-    document.getElementById("diabetes-score").textContent = diabetesPercent + "%";
-    document.getElementById("respiratory-score").textContent = respPercent + "%";
+        if (!raw) {
+            alert("No assessment data found. Please redo your assessment.");
+            window.location.href = "index.html";
+            return;
+        }
 
-    document.getElementById("malaria-bar").style.width = malariaPercent + "%";
-    document.getElementById("diabetes-bar").style.width = diabetesPercent + "%";
-    document.getElementById("respiratory-bar").style.width = respPercent + "%";
+        let result = null;
 
-    document.getElementById("explanation").textContent = result.explanation;
-    document.getElementById("result-date").textContent = new Date().toLocaleDateString();
-}
+        try {
+            result = JSON.parse(raw);
+        } catch (e) {
+            alert("Error reading assessment data. Please redo your test.");
+            window.location.href = "index.html";
+            return;
+        }
 
-loadResults();
+        if (!result.risk_scores) {
+            alert("AI response incomplete. Please redo your test.");
+            window.location.href = "index.html";
+            return;
+        }
 
-/* --------------------------------
-   PATIENT PROFILE (LOCALSTORAGE)
----------------------------------*/
-const profileKey = "healthguardProfile";
+        assessmentResult = result;
 
-function loadProfile() {
-    const saved = localStorage.getItem(profileKey);
-    if (!saved) return;
+        const malariaPercent = Math.round((result.risk_scores.malaria || 0) * 100);
+        const diabetesPercent = Math.round((result.risk_scores.diabetes || 0) * 100);
+        const respPercent = Math.round((result.risk_scores.respiratory_infection || 0) * 100);
 
-    const profile = JSON.parse(saved);
-    if (profile.name) document.getElementById("profile-name").value = profile.name;
-    if (profile.age) document.getElementById("profile-age").value = profile.age;
-    if (profile.gender) document.getElementById("profile-gender").value = profile.gender;
-    if (profile.email) document.getElementById("profile-email").value = profile.email;
-}
+        document.getElementById("malaria-score").textContent = malariaPercent + "%";
+        document.getElementById("diabetes-score").textContent = diabetesPercent + "%";
+        document.getElementById("respiratory-score").textContent = respPercent + "%";
 
-function saveProfile() {
-    const name = document.getElementById("profile-name").value.trim();
-    const age = document.getElementById("profile-age").value.trim();
-    const gender = document.getElementById("profile-gender").value;
-    const email = document.getElementById("profile-email").value.trim();
+        document.getElementById("malaria-bar").style.width = malariaPercent + "%";
+        document.getElementById("diabetes-bar").style.width = diabetesPercent + "%";
+        document.getElementById("respiratory-bar").style.width = respPercent + "%";
 
-    const profile = { name, age, gender, email };
-    localStorage.setItem(profileKey, JSON.stringify(profile));
+        document.getElementById("explanation").textContent =
+            result.explanation || "No explanation provided.";
 
-    const status = document.getElementById("profileStatus");
-    status.classList.remove("hidden");
-    status.textContent = "Profile saved on this device.";
-}
-
-document.getElementById("saveProfileBtn").onclick = saveProfile;
-loadProfile();
-
-/* --------------------------------
-   CONSULTATION MODAL LOGIC
----------------------------------*/
-const consultBtn = document.getElementById("consultBtn");
-const consultModal = document.getElementById("consultModal");
-const closeModal = document.getElementById("closeModal");
-const sendToDoctorBtn = document.getElementById("sendToDoctorBtn");
-
-consultBtn.onclick = () => consultModal.classList.remove("hidden");
-closeModal.onclick = () => consultModal.classList.add("hidden");
-
-/* --------------------------------
-   LOCAL CONSULTATION STORAGE
----------------------------------*/
-const consultationsKey = "healthguardConsultations";
-
-sendToDoctorBtn.onclick = () => {
-    const message = document.getElementById("patientMessage").value.trim();
-    if (!message) {
-        alert("Please enter a message.");
-        return;
-    }
-    if (!assessmentResult) {
-        alert("Missing assessment result. Please redo your assessment.");
-        return;
+        document.getElementById("result-date").textContent =
+            new Date().toLocaleDateString();
     }
 
-    sendToDoctorBtn.disabled = true;
-    sendToDoctorBtn.textContent = "Saving...";
+    loadResults();
 
-    const profileRaw = localStorage.getItem(profileKey);
-    const profile = profileRaw ? JSON.parse(profileRaw) : null;
 
-    const existingRaw = localStorage.getItem(consultationsKey);
-    const consultations = existingRaw ? JSON.parse(existingRaw) : [];
+    /* --------------------------------
+       PROFILE LOCAL STORAGE
+    ---------------------------------*/
+    const profileKey = "healthguardProfile";
 
-    const newEntry = {
-        id: Date.now(),
-        timestamp: new Date().toISOString(),
-        assessment: assessmentResult,
-        patientMessage: message,
-        profile: profile,
-        doctorReply: "Your case has been saved. In this MVP demo, a doctor can review it from the local inbox on this device."
+    function loadProfile() {
+        const saved = localStorage.getItem(profileKey);
+        if (!saved) return;
+
+        const profile = JSON.parse(saved);
+
+        if (profile.name) document.getElementById("profile-name").value = profile.name;
+        if (profile.age) document.getElementById("profile-age").value = profile.age;
+        if (profile.gender) document.getElementById("profile-gender").value = profile.gender;
+        if (profile.email) document.getElementById("profile-email").value = profile.email;
+    }
+
+    function saveProfile() {
+        const profile = {
+            name: document.getElementById("profile-name").value.trim(),
+            age: document.getElementById("profile-age").value.trim(),
+            gender: document.getElementById("profile-gender").value,
+            email: document.getElementById("profile-email").value.trim()
+        };
+
+        localStorage.setItem(profileKey, JSON.stringify(profile));
+
+        const status = document.getElementById("profileStatus");
+        status.classList.remove("hidden");
+        status.textContent = "Profile saved on this device.";
+    }
+
+    document.getElementById("saveProfileBtn").onclick = saveProfile;
+    loadProfile();
+
+
+    /* --------------------------------
+       CONSULTATION MODAL
+    ---------------------------------*/
+    const consultBtn = document.getElementById("consultBtn");
+    const consultModal = document.getElementById("consultModal");
+    const closeModal = document.getElementById("closeModal");
+    const sendToDoctorBtn = document.getElementById("sendToDoctorBtn");
+
+    consultBtn.onclick = () => consultModal.classList.remove("hidden");
+    closeModal.onclick = () => consultModal.classList.add("hidden");
+
+
+    /* --------------------------------
+       LOCAL CONSULTATION STORAGE
+    ---------------------------------*/
+    const consultationsKey = "healthguardConsultations";
+
+    sendToDoctorBtn.onclick = () => {
+        const message = document.getElementById("patientMessage").value.trim();
+
+        if (!message) {
+            alert("Please enter a message.");
+            return;
+        }
+
+        const existing = JSON.parse(localStorage.getItem(consultationsKey) || "[]");
+
+        const profileRaw = localStorage.getItem(profileKey);
+        const profile = profileRaw ? JSON.parse(profileRaw) : null;
+
+        const entry = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            assessment: assessmentResult,
+            patientMessage: message,
+            profile: profile,
+            doctorReply:
+                "Your case has been saved. A doctor can review it from your local device inbox during demos."
+        };
+
+        existing.push(entry);
+        localStorage.setItem(consultationsKey, JSON.stringify(existing));
+
+        consultModal.classList.add("hidden");
+
+        const replyContainer = document.getElementById("doctorReplyContainer");
+        const replyText = document.getElementById("doctorResponse");
+        replyContainer.classList.remove("hidden");
+        replyText.textContent = entry.doctorReply;
+
+        document.getElementById("patientMessage").value = "";
     };
 
-    consultations.push(newEntry);
-    localStorage.setItem(consultationsKey, JSON.stringify(consultations));
 
-    consultModal.classList.add("hidden");
-    sendToDoctorBtn.disabled = false;
-    sendToDoctorBtn.textContent = "Send Message";
+    /* --------------------------------
+       DOWNLOAD REPORT
+    ---------------------------------*/
+    document.getElementById("downloadReportBtn").onclick = () => {
+        if (!assessmentResult) {
+            alert("No assessment found.");
+            return;
+        }
 
-    const replyContainer = document.getElementById("doctorReplyContainer");
-    const replyText = document.getElementById("doctorResponse");
-    replyContainer.classList.remove("hidden");
-    replyText.textContent = newEntry.doctorReply;
+        const profileRaw = localStorage.getItem(profileKey);
+        const profile = profileRaw ? JSON.parse(profileRaw) : {};
 
-    document.getElementById("patientMessage").value = "";
-};
+        const malariaPercent = Math.round((assessmentResult.risk_scores.malaria || 0) * 100);
+        const diabetesPercent = Math.round((assessmentResult.risk_scores.diabetes || 0) * 100);
+        const respPercent = Math.round((assessmentResult.risk_scores.respiratory_infection || 0) * 100);
 
-/* --------------------------------
-   DOWNLOAD REPORT (TEXT VERSION)
----------------------------------*/
-document.getElementById("downloadReportBtn").onclick = () => {
-    if (!assessmentResult) {
-        alert("No assessment found. Please complete an assessment first.");
-        return;
-    }
+        const lines = [
+            "HealthGuard – Health Assessment Report",
+            "--------------------------------------",
+            "",
+            `Name: ${profile.name || "Not provided"}`,
+            `Age: ${profile.age || "Not provided"}`,
+            `Gender: ${profile.gender || "Not provided"}`,
+            `Email: ${profile.email || "Not provided"}`,
+            "",
+            `Assessment Date: ${new Date().toLocaleDateString()}`,
+            "",
+            "Risk Levels:",
+            `- Malaria: ${malariaPercent}%`,
+            `- Diabetes: ${diabetesPercent}%`,
+            `- Respiratory Infection: ${respPercent}%`,
+            "",
+            "Summary:",
+            assessmentResult.explanation,
+            "",
+            "Note: This is a preliminary AI-based risk assessment and is not a medical diagnosis.",
+            "Please consult a qualified healthcare professional for proper evaluation."
+        ];
 
-    const profileRaw = localStorage.getItem(profileKey);
-    const profile = profileRaw ? JSON.parse(profileRaw) : {};
-
-    const malariaPercent = Math.round(assessmentResult.risk_scores.malaria * 100);
-    const diabetesPercent = Math.round(assessmentResult.risk_scores.diabetes * 100);
-    const respPercent = Math.round(assessmentResult.risk_scores.respiratory_infection * 100);
-
-    const lines = [
-        "HealthGuard – Health Assessment Report",
-        "--------------------------------------",
-        "",
-        `Name: ${profile.name || "Not provided"}`,
-        `Age: ${profile.age || "Not provided"}`,
-        `Gender: ${profile.gender || "Not provided"}`,
-        `Email: ${profile.email || "Not provided"}`,
-        "",
-        `Assessment Date: ${new Date().toLocaleDateString()}`,
-        "",
-        "Risk Levels:",
-        `- Malaria: ${malariaPercent}%`,
-        `- Diabetes: ${diabetesPercent}%`,
-        `- Respiratory Infection: ${respPercent}%`,
-        "",
-        "Summary:",
-        assessmentResult.explanation,
-        "",
-        "Note: This is a preliminary AI-based risk assessment and is not a medical diagnosis.",
-        "Please consult a qualified healthcare professional for proper evaluation."
-    ];
-
-    const text = lines.join("\n");
-    const blob = new Blob([text], { type: "text/plain" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "healthguard_assessment.txt";
-    link.click();
-};
-</script>
+        const text = lines.join("\n");
+        const blob = new Blob([text], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "healthguard_assessment.txt";
+        link.click();
+    };
+    </script>
 
 </body>
 </html>
