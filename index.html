@@ -8,7 +8,7 @@
   />
   <title>HealthGuard AI – Community Health Screening</title>
 
-  <!-- Tailwind CSS CDN (fine for MVP) -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Feather Icons -->
@@ -66,7 +66,7 @@
         </div>
         <h3 class="font-semibold">Multi-condition Risk Signals</h3>
         <p class="text-sm text-gray-600">
-          Get simple risk estimates for malaria, diabetes and respiratory
+          Get risk estimates for malaria, diabetes and respiratory
           infections from one screening flow.
         </p>
       </div>
@@ -88,8 +88,7 @@
         </div>
         <h3 class="font-semibold">Privacy-first by Design</h3>
         <p class="text-sm text-gray-600">
-          No login required for the MVP. Data is anonymised at the point of use
-          and only used to improve care pathways.
+          No login required for the MVP. Data stays local during testing.
         </p>
       </div>
     </section>
@@ -169,31 +168,6 @@
           </div>
         </div>
 
-        <!-- HEALTH CONCERNS -->
-        <div>
-          <p class="block text-sm font-medium text-gray-700 mb-2">
-            What are you most concerned about? (optional)
-          </p>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" class="rounded text-blue-600" />
-              <span>Malaria</span>
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" class="rounded text-blue-600" />
-              <span>Diabetes</span>
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" class="rounded text-blue-600" />
-              <span>Respiratory</span>
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" class="rounded text-blue-600" />
-              <span>STIs</span>
-            </label>
-          </div>
-        </div>
-
         <!-- SYMPTOMS TEXTAREA -->
         <div>
           <label for="symptoms-input" class="block text-sm font-medium text-gray-700 mb-2">
@@ -210,40 +184,11 @@
           </p>
         </div>
 
-        <!-- OPTIONAL IMAGE UPLOAD (MVP placeholder) -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            Optional: Upload symptom images (e.g. skin rash)
-          </label>
-          <div
-            class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center"
-          >
-            <input
-              type="file"
-              id="symptomImages"
-              accept="image/*"
-              multiple
-              class="hidden"
-            />
-            <label
-              for="symptomImages"
-              class="cursor-pointer flex flex-col items-center justify-center text-sm text-gray-500"
-            >
-              <i data-feather="image" class="mb-1 text-gray-400"></i>
-              <span>Click to upload or drag &amp; drop (max 3 images)</span>
-            </label>
-            <div
-              id="imagePreviews"
-              class="grid grid-cols-3 gap-2 mt-3"
-            ></div>
-          </div>
-        </div>
-
-        <!-- ACTIONS -->
+        <!-- ACTION -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-gray-100">
           <div class="text-xs text-gray-500 max-w-xs">
             This tool does <span class="font-semibold">not</span> replace a doctor.
-            If you feel very unwell, please seek urgent medical care.
+            If you feel very unwell, seek urgent medical care.
           </div>
 
           <button
@@ -276,7 +221,7 @@
           </div>
           <h3 class="font-semibold">2. AI generates a risk estimate</h3>
           <p class="text-gray-600">
-            For this MVP, we simulate risk estimates to test the user experience and workflow.
+            This version uses a real AI model for triage.
           </p>
         </div>
         <div class="bg-white rounded-xl shadow-sm p-5 space-y-2">
@@ -285,7 +230,7 @@
           </div>
           <h3 class="font-semibold">3. You decide next steps</h3>
           <p class="text-gray-600">
-            You can save or share your results with a health worker for further review.
+            You can save or share your results with a health worker.
           </p>
         </div>
       </div>
@@ -300,13 +245,68 @@
     </div>
   </footer>
 
-  <!-- INIT ICONS + YEAR -->
   <script>
     feather.replace();
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 
-  <!-- APP LOGIC (fake analysis lives in script.js) -->
-  <script src="script.js"></script>
+  <!-- MAIN APP LOGIC -->
+  <script>
+    const form = document.getElementById("symptoms-form");
+    const submitBtn = document.getElementById("submit-btn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <i data-feather="loader" class="animate-spin mr-2"></i>
+        Analyzing...
+      `;
+      feather.replace();
+
+      const symptoms = document.getElementById("symptoms-input").value.trim();
+      const age = document.getElementById("age").value;
+      const gender = document.getElementById("gender").value;
+      const location = document.getElementById("location").value;
+      const duration = document.getElementById("duration").value;
+
+      try {
+        const response = await fetch("/api/triage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            symptoms,
+            age,
+            gender,
+            duration,
+            location
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          alert("AI error: " + data.error);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = "Get Instant Risk Estimate";
+          feather.replace();
+          return;
+        }
+
+        // Save result and go to results page
+        sessionStorage.setItem("healthAssessment", JSON.stringify(data));
+        window.location.href = "results.html";
+
+      } catch (err) {
+        alert("Network or AI error. Please try again.");
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Get Instant Risk Estimate";
+      feather.replace();
+    });
+  </script>
+
 </body>
 </html>
