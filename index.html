@@ -1,848 +1,312 @@
-<index.html>
-<!-- saved from url=(0012)about:srcdoc -->
-<html lang="en"><script data-token="677431-349499-399281" id="eternl-dom-script" src="chrome-extension://kmhcihpebfmpgmihbkipmjlmmioameka/app/dom.js?token=677431-349499-399281"></script><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<script>
-      (function() {
-        const availablePages = ["index.html","components/footer.js","components/language-toggle.js","components/navbar.js","components/voice-input.js","components/zk-proof.js","admin.html","results.html","script.js","style.css"];
-        
-        function normalizePath(path) {
-          let normalized = path.replace(/^.?//, "");
-          if (normalized === "" || normalized === "/") {
-            normalized = "index.html";
-          }
-          const hashIndex = normalized.indexOf("#");
-          if (hashIndex !== -1) {
-            normalized = normalized.substring(0, hashIndex);
-          }
-          if (!normalized.includes(".")) {
-            normalized = normalized + ".html";
-          }
-          return normalized;
-        }
-        
-        function handleNavigation(url) {
-          if (!url) return;
-          
-          // Handle hash-only navigation
-          if (url.startsWith("#")) {
-            const targetElement = document.querySelector(url);
-            if (targetElement) {
-              targetElement.scrollIntoView({ behavior: "smooth" });
-            }
-            // Search in shadow DOM
-            const searchInShadows = (root) => {
-              const elements = root.querySelectorAll("*");
-              for (const el of elements) {
-                if (el.shadowRoot) {
-                  const found = el.shadowRoot.querySelector(url);
-                  if (found) {
-                    found.scrollIntoView({ behavior: "smooth" });
-                    return;
-                  }
-                  searchInShadows(el.shadowRoot);
-                }
-              }
-            };
-            searchInShadows(document);
-            return;
-          }
-          
-          // Handle external URLs
-          if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//")) {
-            window.open(url, "_blank");
-            return;
-          }
-          
-          const normalizedPath = normalizePath(url);
-          if (availablePages.includes(normalizedPath)) {
-            // Dispatch custom event to notify parent
-            window.parent.postMessage({ type: 'navigate', path: normalizedPath }, '*');
-          } else {
-            console.warn('Page not found:', normalizedPath);
-          }
-        }
-        
-        // Intercept window.location methods
-        const originalAssign = window.location.assign;
-        const originalReplace = window.location.replace;
-        
-        window.location.assign = function(url) {
-          handleNavigation(url);
-        };
-        
-        window.location.replace = function(url) {
-          handleNavigation(url);
-        };
-        
-        // Intercept window.location.href setter
-        try {
-          let currentHref = window.location.href;
-          Object.defineProperty(window.location, 'href', {
-            get: function() {
-              return currentHref;
-            },
-            set: function(url) {
-              handleNavigation(url);
-            },
-            configurable: true
-          });
-        } catch (e) {
-          // Fallback: use proxy if defineProperty fails
-          console.warn('Could not intercept location.href:', e);
-        }
-        
-        // Intercept link clicks
-        document.addEventListener('click', function(e) {
-          const anchor = e.target.closest('a');
-          if (anchor && anchor.href) {
-            const href = anchor.getAttribute('href');
-            if (href && !href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('//') && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
-              e.preventDefault();
-              handleNavigation(href);
-            }
-          }
-        }, true);
-        
-        // Intercept form submissions
-        document.addEventListener('submit', function(e) {
-          const form = e.target;
-          if (form.action && !form.action.startsWith('http://') && !form.action.startsWith('https://') && !form.action.startsWith('//')) {
-            e.preventDefault();
-            handleNavigation(form.action);
-          }
-        }, true);
-      })();
-    </script>
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HealthGuard AI Sentinel</title>
-    
-    <script src="https://cdn.tailwindcss.com/"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    
-    
-<style data-injected-from="style.css">
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>HealthGuard AI – Community Health Screening</title>
 
-/* Custom animations */
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
-}
+  <!-- Tailwind CSS CDN (fine for MVP) -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-.animate-pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
+  <!-- Feather Icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
+  <!-- NAVBAR -->
+  <header class="bg-white shadow-sm">
+    <nav class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i data-feather="shield" class="text-blue-600"></i>
+        <span class="font-bold text-lg">HealthGuard AI</span>
+      </div>
+      <div class="hidden md:flex items-center gap-6 text-sm text-gray-600">
+        <a href="#home" class="hover:text-blue-600">Home</a>
+        <a href="#screening" class="hover:text-blue-600">Start Screening</a>
+        <a href="#how-it-works" class="hover:text-blue-600">How it Works</a>
+      </div>
+    </nav>
+  </header>
 
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
+  <!-- HERO SECTION -->
+  <main id="home" class="max-w-5xl mx-auto px-4 py-10 space-y-12">
+    <section class="text-center space-y-4">
+      <p class="text-xs uppercase tracking-wide text-blue-600 font-semibold">
+        BAF · Community Health Sentinel
+      </p>
+      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900">
+        Early Health Risk Checks for Underserved Communities
+      </h1>
+      <p class="max-w-2xl mx-auto text-gray-600">
+        Describe your symptoms and basic details to get an AI-assisted risk
+        estimate for common conditions like malaria, diabetes, and respiratory
+        infections. This is <span class="font-semibold">not</span> a diagnosis –
+        it’s a first-level screening to guide better decisions.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+        <a href="#screening"
+           class="inline-flex items-center justify-center px-5 py-3 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">
+          Start Screening
+        </a>
+        <a href="#how-it-works"
+           class="inline-flex items-center justify-center px-5 py-3 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-blue-500 hover:text-blue-600">
+          Learn how it works
+        </a>
+      </div>
+    </section>
 
-::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* Voice input animation */
-.recording {
-    animation: pulse 1.5s ease-in-out infinite;
-}
-</style>
-<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}.mx-auto{margin-left:auto;margin-right:auto}.mb-16{margin-bottom:4rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.ml-2{margin-left:0.5rem}.mt-2{margin-top:0.5rem}.mt-4{margin-top:1rem}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-32{height:8rem}.h-4{height:1rem}.h-8{height:2rem}.w-10{width:2.5rem}.w-4{width:1rem}.w-8{width:2rem}.w-full{width:100%}.max-w-3xl{max-width:48rem}.max-w-4xl{max-width:56rem}.cursor-pointer{cursor:pointer}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-8{gap:2rem}.rounded{border-radius:0.25rem}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-dashed{border-style:dashed}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-semibold{font-weight:600}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55 / var(--tw-text-opacity, 1))}.text-green-500{--tw-text-opacity:1;color:rgb(34 197 94 / var(--tw-text-opacity, 1))}.text-purple-500{--tw-text-opacity:1;color:rgb(168 85 247 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-shadow{transition-property:box-shadow;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216 / var(--tw-bg-opacity, 1))}.hover\:text-blue-700:hover{--tw-text-opacity:1;color:rgb(29 78 216 / var(--tw-text-opacity, 1))}.hover\:shadow-lg:hover{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.focus\:border-blue-500:focus{--tw-border-opacity:1;border-color:rgb(59 130 246 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-blue-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(59 130 246 / var(--tw-ring-opacity, 1))}@media (min-width: 768px){.md\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.md\:text-5xl{font-size:3rem;line-height:1}}</style></head>
-<body class="bg-gray-50" data-new-gr-c-s-check-loaded="14.1263.0" data-gr-ext-installed="">
-    <custom-navbar></custom-navbar>
-    
-    <main class="container mx-auto px-4 py-12">
-        <section class="text-center mb-16">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">BAF AI-Powered Medical Diagnostic App</h1>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Get instant symptom analysis and risk assessments for malaria, diabetes, respiratory infections and STIs with our privacy-focused platform</p>
-        </section>
-        <div class="grid md:grid-cols-4 gap-8 mb-16">
-            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div class="text-blue-500 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-activity w-10 h-10"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                </div>
-                <h3 class="text-xl font-semibold mb-2">Symptom Analysis</h3>
-                <p class="text-gray-600">Get AI-powered risk assessment for multiple health conditions</p>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div class="text-green-500 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-image w-10 h-10"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                </div>
-                <h3 class="text-xl font-semibold mb-2">Image Upload</h3>
-                <p class="text-gray-600">Upload images of skin conditions or other visible symptoms</p>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div class="text-purple-500 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mic w-10 h-10"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                </div>
-                <h3 class="text-xl font-semibold mb-2">Voice Input</h3>
-                <p class="text-gray-600">Describe symptoms verbally in your preferred language</p>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div class="text-red-500 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shield w-10 h-10"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                </div>
-                <h3 class="text-xl font-semibold mb-2">Privacy First</h3>
-                <p class="text-gray-600">Confidential screening for sensitive conditions like STIs</p>
-            </div>
+    <!-- FEATURES -->
+    <section class="grid md:grid-cols-3 gap-6">
+      <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col gap-2">
+        <div class="text-blue-600">
+          <i data-feather="activity"></i>
         </div>
-<div class="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Start Your Screening</h2>
-            
-            <div class="mb-6">
-                <label class="block text-gray-700 mb-2">Select Language</label>
-                <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option>English</option>
-                    <option>Hausa</option>
-                    <option>Yoruba</option>
-                    <option>Swahili</option>
-                </select>
-            </div>
-            <div class="mb-6">
-                <label class="block text-gray-700 mb-2">Health Concern</label>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                    <label class="flex items-center">
-                        <input type="checkbox" class="rounded text-blue-500">
-                        <span class="ml-2">Malaria</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" class="rounded text-blue-500">
-                        <span class="ml-2">Diabetes</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" class="rounded text-blue-500">
-                        <span class="ml-2">Respiratory</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" class="rounded text-blue-500">
-                        <span class="ml-2">STIs</span>
-                    </label>
-                </div>
-            </div>
-<div>
-                        <label class="block text-gray-700 mb-2" for="age">Age</label>
-                        <input type="number" id="age" min="1" max="120" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required="">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-gray-700 mb-2" for="gender">Gender</label>
-                        <select id="gender" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required="">
-                            <option value="">Select</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-gray-700 mb-2" for="location">Location</label>
-                        <input type="text" id="location" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required="">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-gray-700 mb-2" for="duration">Duration of symptoms</label>
-                        <select id="duration" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required="">
-                            <option value="">Select</option>
-                            <option value="less than a day">Less than a day</option>
-                            <option value="1-3 days">1-3 days</option>
-                            <option value="4-7 days">4-7 days</option>
-                            <option value="more than a week">More than a week</option>
-                        </select>
-                    </div>
-                </div>
+        <h3 class="font-semibold">Multi-condition Risk Signals</h3>
+        <p class="text-sm text-gray-600">
+          Get simple risk estimates for malaria, diabetes and respiratory
+          infections from one screening flow.
+        </p>
+      </div>
 
-            <div class="mb-6">
-                <label class="block text-gray-700 mb-2">Describe Your Symptoms</label>
-                <textarea class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-32" placeholder="Enter your symptoms here..."></textarea>
-                <div class="flex justify-end mt-2 gap-4">
-                    <button class="flex items-center gap-2 text-blue-500 hover:text-blue-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mic w-4 h-4"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                        Voice Input
-                    </button>
-                    <button class="flex items-center gap-2 text-blue-500 hover:text-blue-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-image w-4 h-4"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                        Upload Images
-                    </button>
-                </div>
-            </div>
-
-            <form id="symptoms-form">
-
-    <div class="mb-6 hidden" id="imageUploadSection">
-        <label class="block text-gray-700 mb-2">Upload Symptom Images (max 3)</label>
-        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-            <div class="flex items-center justify-center">
-                <input type="file" id="symptomImages" class="hidden" accept="image/*" multiple>
-                <label for="symptomImages" class="cursor-pointer flex flex-col items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-upload w-8 h-8 text-gray-400 mb-2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/>
-                        <line x1="12" y1="3" x2="12" y2="15"/>
-                    </svg>
-                    <span class="text-gray-500">Click to upload or drag and drop</span>
-                    <span class="text-sm text-gray-400">JPG/PNG up to 5MB each</span>
-                </label>
-            </div>
-            <div class="grid grid-cols-3 gap-3 mt-4" id="imagePreviews"></div>
+      <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col gap-2">
+        <div class="text-green-600">
+          <i data-feather="globe"></i>
         </div>
+        <h3 class="font-semibold">Built for Local Contexts</h3>
+        <p class="text-sm text-gray-600">
+          Designed for low-resource communities with support for simple language
+          and mobile-first access.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col gap-2">
+        <div class="text-purple-600">
+          <i data-feather="shield"></i>
+        </div>
+        <h3 class="font-semibold">Privacy-first by Design</h3>
+        <p class="text-sm text-gray-600">
+          No login required for the MVP. Data is anonymised at the point of use
+          and only used to improve care pathways.
+        </p>
+      </div>
+    </section>
+
+    <!-- SCREENING FORM -->
+    <section id="screening" class="bg-white rounded-2xl shadow-md p-6 md:p-8">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-xl md:text-2xl font-bold">Start Your Health Screening</h2>
+          <p class="text-sm text-gray-600">
+            Fill in what you know. If you’re not sure about something, leave it blank.
+          </p>
+        </div>
+        <span class="hidden md:inline-flex items-center gap-1 text-xs text-gray-500">
+          <i data-feather="clock"></i>
+          Takes about 2–3 minutes
+        </span>
+      </div>
+
+      <form id="symptoms-form" class="space-y-6">
+
+        <!-- BASIC INFO -->
+        <div class="grid md:grid-cols-4 gap-4">
+          <div>
+            <label for="age" class="block text-sm font-medium text-gray-700 mb-1">Age</label>
+            <input
+              type="number"
+              id="age"
+              min="1"
+              max="120"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g. 27"
+              required
+            />
+          </div>
+
+          <div>
+            <label for="gender" class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+            <select
+              id="gender"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Other / Prefer not to say</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+            <input
+              type="text"
+              id="location"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Town / community"
+              required
+            />
+          </div>
+
+          <div>
+            <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">
+              Duration of symptoms
+            </label>
+            <select
+              id="duration"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select</option>
+              <option value="less than a day">Less than a day</option>
+              <option value="1-3 days">1–3 days</option>
+              <option value="4-7 days">4–7 days</option>
+              <option value="more than a week">More than a week</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- HEALTH CONCERNS -->
+        <div>
+          <p class="block text-sm font-medium text-gray-700 mb-2">
+            What are you most concerned about? (optional)
+          </p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <label class="inline-flex items-center gap-2">
+              <input type="checkbox" class="rounded text-blue-600" />
+              <span>Malaria</span>
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="checkbox" class="rounded text-blue-600" />
+              <span>Diabetes</span>
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="checkbox" class="rounded text-blue-600" />
+              <span>Respiratory</span>
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="checkbox" class="rounded text-blue-600" />
+              <span>STIs</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- SYMPTOMS TEXTAREA -->
+        <div>
+          <label for="symptoms-input" class="block text-sm font-medium text-gray-700 mb-2">
+            Describe your symptoms
+          </label>
+          <textarea
+            id="symptoms-input"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm h-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Example: fever, chills, headache, body pain, difficulty breathing..."
+            required
+          ></textarea>
+          <p class="mt-1 text-xs text-gray-500">
+            Don’t worry about grammar – just type what you feel in your own words.
+          </p>
+        </div>
+
+        <!-- OPTIONAL IMAGE UPLOAD (MVP placeholder) -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">
+            Optional: Upload symptom images (e.g. skin rash)
+          </label>
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center"
+          >
+            <input
+              type="file"
+              id="symptomImages"
+              accept="image/*"
+              multiple
+              class="hidden"
+            />
+            <label
+              for="symptomImages"
+              class="cursor-pointer flex flex-col items-center justify-center text-sm text-gray-500"
+            >
+              <i data-feather="image" class="mb-1 text-gray-400"></i>
+              <span>Click to upload or drag &amp; drop (max 3 images)</span>
+            </label>
+            <div
+              id="imagePreviews"
+              class="grid grid-cols-3 gap-2 mt-3"
+            ></div>
+          </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-gray-100">
+          <div class="text-xs text-gray-500 max-w-xs">
+            This tool does <span class="font-semibold">not</span> replace a doctor.
+            If you feel very unwell, please seek urgent medical care.
+          </div>
+
+          <button
+            id="submit-btn"
+            type="submit"
+            class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700"
+          >
+            <span>Get Instant Risk Estimate</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="space-y-6">
+      <h2 class="text-xl md:text-2xl font-bold">How HealthGuard AI Works</h2>
+      <div class="grid md:grid-cols-3 gap-6 text-sm">
+        <div class="bg-white rounded-xl shadow-sm p-5 space-y-2">
+          <div class="text-blue-600">
+            <i data-feather="edit-3"></i>
+          </div>
+          <h3 class="font-semibold">1. You describe what you feel</h3>
+          <p class="text-gray-600">
+            You enter simple details – age, location, and symptoms in your own words.
+          </p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 space-y-2">
+          <div class="text-green-600">
+            <i data-feather="cpu"></i>
+          </div>
+          <h3 class="font-semibold">2. AI generates a risk estimate</h3>
+          <p class="text-gray-600">
+            For this MVP, we simulate risk estimates to test the user experience and workflow.
+          </p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 space-y-2">
+          <div class="text-purple-600">
+            <i data-feather="user-check"></i>
+          </div>
+          <h3 class="font-semibold">3. You decide next steps</h3>
+          <p class="text-gray-600">
+            You can save or share your results with a health worker for further review.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-12 border-t border-gray-200 bg-white">
+    <div class="max-w-5xl mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+      <span>© <span id="year"></span> HealthGuard AI · Built for community health access.</span>
+      <span>Prototype – not for emergency use.</span>
     </div>
+  </footer>
 
-    <button id="submit-btn" 
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
-        Get Instant Result
-    </button>
+  <!-- INIT ICONS + YEAR -->
+  <script>
+    feather.replace();
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 
-</form>
-        
-    </main>
-
-    <custom-footer></custom-footer>
-    
-    <script>
-        feather.replace();
-    </script>
-    
-<script data-injected-from="components/footer.js">
-class CustomFooter extends HTMLElement {
-    connectedCallback() {
-        this.attachShadow({ mode: 'open' });
-        this.shadowRoot.innerHTML = `
-            <style>
-                footer {
-                    background-color: #f8fafc;
-                    border-top: 1px solid #e2e8f0;
-                }
-                
-                .footer-link:hover {
-                    color: #3b82f6;
-                }
-            </style>
-            <footer class="py-8 px-6">
-                <div class="container mx-auto">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">HealthGuardian AI</h3>
-                            <p class="text-gray-600">AI-powered disease risk assessment for underserved communities.</p>
-                        </div>
-                        
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Links</h3>
-                            <ul class="space-y-2">
-                                <li><a href="index.html" class="footer-link text-gray-600 hover:text-blue-500 transition">Home</a></li>
-                                <li><a href="about.html" class="footer-link text-gray-600 hover:text-blue-500 transition">About</a></li>
-                                <li><a href="privacy.html" class="footer-link text-gray-600 hover:text-blue-500 transition">Privacy Policy</a></li>
-                            </ul>
-                        </div>
-                        
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Contact</h3>
-                            <ul class="space-y-2">
-                                <li class="flex items-center text-gray-600">
-                                    <i data-feather="mail" class="mr-2"></i>
-                                    <span>support@healthguardian.ai</span>
-                                </li>
-                                <li class="flex items-center text-gray-600">
-                                    <i data-feather="globe" class="mr-2"></i>
-                                    <span>healthguardian.ai</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-gray-200 mt-8 pt-8 text-center text-gray-500">
-                        <p>© 2023 HealthGuardian AI. All rights reserved.</p>
-                    </div>
-                </div>
-                <script>feather.replace();</script>
-            
-        `;
-    }
-}
-
-customElements.define('custom-footer', CustomFooter);
-
-<script data-injected-from="components/language-toggle.js">
-class CustomLanguageToggle extends HTMLElement {
-    connectedCallback() {
-        this.attachShadow({ mode: 'open' });
-        this.shadowRoot.innerHTML = `
-            <style>
-                .language-toggle {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                }
-                
-                select {
-                    appearance: none;
-                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-                    background-repeat: no-repeat;
-                    background-position: right 0.5rem center;
-                    background-size: 1rem;
-                }
-            </style>
-            <div class="language-toggle">
-                <i data-feather="globe" class="text-gray-500"></i>
-                <select id="language-select" class="bg-white border border-gray-300 rounded-md px-3 py-1 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <option value="en">English</option>
-                    <option value="sw">Swahili</option>
-                    <option value="yo">Yoruba</option>
-                    <option value="ha">Hausa</option>
-                </select>
-            </div>
-            <script>
-                feather.replace();
-                document.getElementById('language-select').addEventListener('change', (e) => {
-                    // In a real app, this would trigger language change
-                    console.log('Language changed to:', e.target.value);
-                });
-            </script>
-        `;
-    }
-}
-
-customElements.define('custom-language-toggle', CustomLanguageToggle);
-
-<script data-injected-from="components/navbar.js">
-class CustomNavbar extends HTMLElement {
-    connectedCallback() {
-        this.attachShadow({ mode: 'open' });
-        this.shadowRoot.innerHTML = `
-            <style>
-                nav {
-                    background-color: #ffffff;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                }
-                
-                .nav-link:hover {
-                    color: #3b82f6;
-                }
-                
-                @media (max-width: 768px) {
-                    .mobile-menu {
-                        display: none;
-                    }
-                    
-                    .mobile-menu.active {
-                        display: block;
-                    }
-                }
-            </style>
-            <nav class="py-4 px-6">
-                <div class="container mx-auto flex justify-between items-center">
-                    <a href="index.html" class="flex items-center space-x-2">
-                        <i data-feather="shield" class="text-blue-600"></i>
-                        <span class="text-xl font-bold text-gray-800">HealthGuardian</span>
-                    </a>
-                    
-                    <div class="hidden md:flex space-x-8">
-                        <a href="index.html" class="nav-link text-gray-600 hover:text-blue-500 transition">Home</a>
-                        <a href="about.html" class="nav-link text-gray-600 hover:text-blue-500 transition">About</a>
-                        <a href="admin.html" class="nav-link text-gray-600 hover:text-blue-500 transition">Admin</a>
-                    </div>
-                    
-                    <button id="mobile-menu-button" class="md:hidden text-gray-600">
-                        <i data-feather="menu"></i>
-                    </button>
-                </div>
-                
-                <div id="mobile-menu" class="mobile-menu mt-4 space-y-2">
-                    <a href="index.html" class="block py-2 text-gray-600 hover:text-blue-500 transition">Home</a>
-                    <a href="about.html" class="block py-2 text-gray-600 hover:text-blue-500 transition">About</a>
-                    <a href="admin.html" class="block py-2 text-gray-600 hover:text-blue-500 transition">Admin</a>
-                </div>
-            </nav>
-            <script>
-                feather.replace();
-                document.getElementById('mobile-menu-button').addEventListener('click', () => {
-                    const menu = document.getElementById('mobile-menu');
-                    menu.classList.toggle('active');
-                });
-            </script>
-        `;
-    }
-}
-
-customElements.define('custom-navbar', CustomNavbar);
-
-<script data-injected-from="components/voice-input.js">
-class CustomVoiceInput extends HTMLElement {
-    connectedCallback() {
-        this.attachShadow({ mode: 'open' });
-        this.shadowRoot.innerHTML = `
-            <style>
-                button {
-                    background-color: #3b82f6;
-                    color: white;
-                    border-radius: 50%;
-                    width: 40px;
-                    height: 40px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    border: none;
-                    outline: none;
-                }
-                
-                button:hover {
-                    background-color: #2563eb;
-                }
-                
-                button.recording {
-                    background-color: #ef4444;
-                    animation: pulse 1.5s ease-in-out infinite;
-                }
-                
-                @keyframes pulse {
-                    0%, 100% {
-                        transform: scale(1);
-                    }
-                    50% {
-                        transform: scale(1.1);
-                    }
-                }
-            </style>
-            <button id="voice-btn" title="Voice Input">
-                <i data-feather="mic"></i>
-            </button>
-            <script>
-                feather.replace();
-                const button = document.getElementById('voice-btn');
-                let recognition;
-                
-                if ('webkitSpeechRecognition' in window) {
-                    recognition = new webkitSpeechRecognition();
-                    recognition.continuous = false;
-                    recognition.interimResults = false;
-                    recognition.lang = 'en-US';
-                    
-                    recognition.onstart = () => {
-                        button.classList.add('recording');
-                        button.innerHTML = '<i data-feather="mic"></i>';
-                        feather.replace();
-                    };
-                    
-                    recognition.onend = () => {
-                        button.classList.remove('recording');
-                        button.innerHTML = '<i data-feather="mic"></i>';
-                        feather.replace();
-                    };
-                    
-                    recognition.onresult = (event) => {
-                        const transcript = event.results[0][0].transcript;
-                        const textarea = document.getElementById('symptoms-input');
-                        textarea.value = transcript;
-                    };
-                    
-                    button.addEventListener('click', () => {
-                        if (button.classList.contains('recording')) {
-                            recognition.stop();
-                        } else {
-                            recognition.start();
-                        }
-                    });
-                } else {
-                    button.disabled = true;
-                    button.title = "Voice input not supported in your browser";
-                }
-            </script>
-        `;
-    }
-}
-
-customElements.define('custom-voice-input', CustomVoiceInput);
-
-<script data-injected-from="components/zk-proof.js">
-class CustomZkProof extends HTMLElement {
-    connectedCallback() {
-        this.attachShadow({ mode: 'open' });
-        this.shadowRoot.innerHTML = `
-            <style>
-                .proof-container {
-                    background-color: #f8fafc;
-                    border-radius: 0.5rem;
-                    padding: 1.5rem;
-                    margin-top: 1rem;
-                }
-                
-                .proof-status {
-                    display: flex;
-                    align-items: center;
-                    padding: 0.75rem;
-                    border-radius: 0.375rem;
-                    margin-top: 1rem;
-                }
-                
-                .proof-status.valid {
-                    background-color: #ecfdf5;
-                    color: #059669;
-                }
-                
-                .proof-status.invalid {
-                    background-color: #fef2f2;
-                    color: #dc2626;
-                }
-            </style>
-            <div class="proof-container">
-                <h3 class="text-lg font-semibold mb-4">Zero-Knowledge Proof Verification</h3>
-                
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2" for="member-id">Community Member ID</label>
-                    <input type="text" id="member-id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your membership ID">
-                </div>
-                
-                <div class="flex gap-2">
-                    <button id="generate-proof" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition flex items-center">
-                        <i data-feather="key" class="mr-2"></i>
-                        Generate Proof
-                    </button>
-                    <button id="verify-proof" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition flex items-center">
-                        <i data-feather="check-circle" class="mr-2"></i>
-                        Verify Proof
-                    </button>
-                </div>
-                
-                <div id="proof-status" class="proof-status hidden">
-                    <i data-feather="info" class="mr-2"></i>
-                    <span id="status-message"></span>
-                </div>
-            </div>
-            <script>
-                feather.replace();
-                
-                document.getElementById('generate-proof').addEventListener('click', async () => {
-                    const memberId = document.getElementById('member-id').value;
-                    if (!memberId) {
-                        alert('Please enter your membership ID');
-                        return;
-                    }
-                    
-                    // Simulate proof generation
-                    document.getElementById('proof-status').classList.remove('valid', 'invalid');
-                    document.getElementById('status-message').textContent = 'Generating proof...';
-                    document.getElementById('proof-status').classList.remove('hidden');
-                    
-                    // In production: Call /zk/generate API
-                    setTimeout(() => {
-                        document.getElementById('status-message').textContent = 'Proof generated successfully!';
-                        document.getElementById('proof-status').classList.add('valid');
-                        feather.replace();
-                    }, 1500);
-                });
-                
-                document.getElementById('verify-proof').addEventListener('click', async () => {
-                    const memberId = document.getElementById('member-id').value;
-                    if (!memberId) {
-                        alert('Please enter your membership ID');
-                        return;
-                    }
-                    
-                    // Simulate proof verification
-                    document.getElementById('proof-status').classList.remove('valid', 'invalid');
-                    document.getElementById('status-message').textContent = 'Verifying proof...';
-                    document.getElementById('proof-status').classList.remove('hidden');
-                    
-                    // In production: Call /zk/verify API
-                    setTimeout(() => {
-                        const isValid = Math.random() > 0.3; // Simulate random verification
-                        if (isValid) {
-                            document.getElementById('status-message').textContent = 'Proof verified - Valid community member!';
-                            document.getElementById('proof-status').classList.add('valid');
-                        } else {
-                            document.getElementById('status-message').textContent = 'Proof invalid - Not a community member';
-                            document.getElementById('proof-status').classList.add('invalid');
-                        }
-                        feather.replace();
-                    }, 1500);
-                });
-            </script>
-        `;
-    }
-}
-
-customElements.define('custom-zk-proof', CustomZkProof);
-
-<script data-injected-from="script.js">
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize voice recognition
-    const voiceInput = document.querySelector('custom-voice-input');
-    
-    // Form submission handler
-    const form = document.getElementById('symptoms-form');
-    if (form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i data-feather="loader" class="animate-spin mr-2"></i> Analyzing...`;
-            feather.replace();
-            
-            // Collect form data
-            const formData = {
-                symptoms: document.getElementById('symptoms-input').value,
-                age: document.getElementById('age').value,
-                gender: document.getElementById('gender').value,
-                location: document.getElementById('location').value,
-                duration: document.getElementById('duration').value
-            };
-            
-            try {
-                // In production: Send to /triage API
-                // const response = await fetch('/triage', {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify(formData)
-                // });
-                // const result = await response.json();
-                
-                // Simulate API response
-                const result = {
-                    risk_scores: {
-                        malaria: Math.random(),
-                        diabetes: Math.random() * 0.5,
-                        respiratory_infection: Math.random() * 0.7
-                    },
-                    explanation: "Based on your symptoms, the highest risk appears to be malaria. Please consult a healthcare provider for proper diagnosis."
-                };
-                
-                // Store in session for results page
-                sessionStorage.setItem('healthAssessment', JSON.stringify(result));
-                window.location.href = 'results.html';
-                
-                // In production: Log to blockchain
-                // await logToBlockchain(result);
-                
-            } catch (error) {
-                showToast('Error submitting assessment. Please try again.', 'error');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = `Check My Health Risk`;
-                feather.replace();
-            }
-        });
-    }
-    
-    // Display results if coming from form
-    if (window.location.pathname.includes('results.html')) {
-        displayResults();
-    }
-    
-    // Offline detection
-    window.addEventListener('offline', () => {
-        showToast('You are offline. Some features may be limited.', 'warning');
-    });
-    
-    window.addEventListener('online', () => {
-        showToast('Connection restored!', 'success');
-    });
-});
-
-async function logToBlockchain(data) {
-    // Generate anonymous user ID hash
-    const anonId = await sha256(navigator.userAgent + Date.now());
-    const logData = {
-        screening_id_hash: await sha256(JSON.stringify(data)),
-        risk_summary: {
-            malaria: data.risk_scores.malaria > 0.5,
-            diabetes: data.risk_scores.diabetes > 0.5,
-            respiratory: data.risk_scores.respiratory_infection > 0.5
-        },
-        timestamp: new Date().toISOString(),
-        anon_user_id: anonId
-    };
-    
-    // In production: Send to /log-screening API
-    console.log('Would log to blockchain:', logData);
-}
-
-async function sha256(message) {
-    // Hash function for anonymization
-    const msgBuffer = new TextEncoder().encode(message);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-function displayResults() {
-    const result = JSON.parse(sessionStorage.getItem('healthAssessment'));
-    if (!result) {
-        window.location.href = 'index.html';
-        return;
-    }
-    
-    // Format percentages
-    const malariaPercent = Math.round(result.risk_scores.malaria * 100);
-    const diabetesPercent = Math.round(result.risk_scores.diabetes * 100);
-    const respPercent = Math.round(result.risk_scores.respiratory_infection * 100);
-    
-    // Update UI
-    document.getElementById('malaria-score').textContent = `${malariaPercent}%`;
-    document.getElementById('malaria-bar').style.width = `${malariaPercent}%`;
-    document.getElementById('diabetes-score').textContent = `${diabetesPercent}%`;
-    document.getElementById('diabetes-bar').style.width = `${diabetesPercent}%`;
-    document.getElementById('respiratory-score').textContent = `${respPercent}%`;
-    document.getElementById('respiratory-bar').style.width = `${respPercent}%`;
-    
-    document.getElementById('explanation').textContent = result.explanation;
-    document.getElementById('result-date').textContent = new Date().toLocaleDateString();
-}
-function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-md text-white ${
-        type === 'success' ? 'bg-green-500' : 
-        type === 'warning' ? 'bg-yellow-500' : 
-        type === 'error' ? 'bg-red-500' : 'bg-blue-500'
-    } shadow-lg`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-</script>
-
-</body><grammarly-desktop-integration data-grammarly-shadow-root="true"><template shadowrootmode="open"><style>
-      div.grammarly-desktop-integration {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-        -moz-user-select: none;
-        -webkit-user-select: none;
-        -ms-user-select:none;
-        user-select:none;
-      }
-
-      div.grammarly-desktop-integration:before {
-        content: attr(data-content);
-      }
-    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>
+  <!-- APP LOGIC (fake analysis lives in script.js) -->
+  <script src="script.js"></script>
+</body>
+</html>
