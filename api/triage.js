@@ -1,3 +1,4 @@
+// /api/triage.js
 import OpenAI from "openai";
 
 export default async function handler(req, res) {
@@ -18,54 +19,59 @@ export default async function handler(req, res) {
   }
 
   try {
-    // -------------------------------
-    // USE VALID CHAT COMPLETION API
-    // -------------------------------
-    const completion = await client.chat.completions.create({
+    // Send request to OpenAI
+    const aiResponse = await client.responses.create({
       model: "gpt-4o-mini",
       temperature: 0.3,
-      messages: [
+      input: [
         {
           role: "system",
           content:
-            "You are a clinical triage assistant. Only return STRICT VALID JSON. No markdown. No backticks.",
+            "You are a clinical triage assistant. Only return STRICT JSON. No explanations outside JSON.",
         },
         {
           role: "user",
           content: `
+A patient has provided:
+
 Symptoms: ${symptoms}
 Age: ${age}
 Gender: ${gender}
 Duration: ${duration}
 
-Return ONLY JSON:
+Return ONLY valid JSON:
 {
   "risk_scores": {
-    "malaria": number (0-1),
-    "diabetes": number (0-1),
-    "respiratory_infection": number (0-1)
+    "malaria": number,
+    "diabetes": number,
+    "respiratory_infection": number
   },
-  "explanation": "2-4 sentence summary"
+  "explanation": "Short medical reasoning (2-4 sentences)"
 }
 `,
         },
       ],
     });
 
-    let text = completion.choices[0].message.content.trim();
+    // Extract text correctly from the Responses API
+    const text = aiResponse.output[0].content[0].text.trim();
 
-    // Remove stray markdown if present
-    text = text.replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "");
+    // Remove accidental code fences
+    const cleaned = text
+      .replace(/^```json/, "")
+      .replace(/^```/, "")
+      .replace(/```$/, "")
+      .trim();
 
-    const data = JSON.parse(text);
+    const data = JSON.parse(cleaned);
 
     return res.status(200).json(data);
-  } catch (err) {
-    console.error("TRIAGE API ERROR:", err);
+  } catch (error) {
+    console.error("TRIAGE API ERROR:", error);
 
     return res.status(500).json({
       error: "AI triage failed",
-      details: err.message,
+      details: error.message,
     });
   }
 }
