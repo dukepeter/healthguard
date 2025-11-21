@@ -6,55 +6,56 @@ export default async function handler(req, res) {
   }
 
   const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: process.env.OPENAI_API_KEY,
   });
 
   const { symptoms, age, gender, duration } = req.body;
 
   if (!symptoms || !age || !gender || !duration) {
     return res.status(400).json({
-      error: "Missing required fields: symptoms, age, gender, duration"
+      error: "Missing required fields: symptoms, age, gender, duration",
     });
   }
 
   try {
-    const response = await client.responses.create({
+    // -------------------------------
+    // USE VALID CHAT COMPLETION API
+    // -------------------------------
+    const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.3,
-      input: [
+      messages: [
         {
           role: "system",
           content:
-            "You are a clinical triage assistant. Only return STRICT JSON. No explanations outside JSON."
+            "You are a clinical triage assistant. Only return STRICT VALID JSON. No markdown. No backticks.",
         },
         {
           role: "user",
           content: `
-A patient has provided:
-
 Symptoms: ${symptoms}
 Age: ${age}
 Gender: ${gender}
 Duration: ${duration}
 
-Return ONLY valid JSON:
+Return ONLY JSON:
 {
   "risk_scores": {
-    "malaria": number,
-    "diabetes": number,
-    "respiratory_infection": number
+    "malaria": number (0-1),
+    "diabetes": number (0-1),
+    "respiratory_infection": number (0-1)
   },
-  "explanation": "Short medical reasoning (2-4 sentences)"
+  "explanation": "2-4 sentence summary"
 }
-`
-        }
-      ]
+`,
+        },
+      ],
     });
 
-    let text = response.output_text;
+    let text = completion.choices[0].message.content.trim();
 
-    // remove formatting if wrapped in code blocks
-    text = text.replace(/^```json/, "").replace(/```$/, "").trim();
+    // Remove stray markdown if present
+    text = text.replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "");
 
     const data = JSON.parse(text);
 
@@ -64,7 +65,7 @@ Return ONLY valid JSON:
 
     return res.status(500).json({
       error: "AI triage failed",
-      details: err.message
+      details: err.message,
     });
   }
 }
