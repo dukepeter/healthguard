@@ -1,4 +1,3 @@
-// /api/triage.js
 import OpenAI from "openai";
 
 export default async function handler(req, res) {
@@ -7,77 +6,65 @@ export default async function handler(req, res) {
   }
 
   const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY
   });
 
-  const { symptoms, age, gender, duration, location, audioText, imageDescriptions } = req.body;
+  const { symptoms, age, gender, duration } = req.body;
 
-  // Basic required fields
-  if (!symptoms || !age || !gender || !duration || !location) {
+  if (!symptoms || !age || !gender || !duration) {
     return res.status(400).json({
-      error: "Missing required fields: symptoms, age, gender, duration, location",
+      error: "Missing required fields: symptoms, age, gender, duration"
     });
   }
 
-  // Prepare dynamic fields
-  const audioSegment = audioText ? `\nAudio transcription: ${audioText}\n` : "";
-  const imagesSegment = imageDescriptions?.length
-    ? `\nUser provided image descriptions: ${imageDescriptions.join(", ")}\n`
-    : "";
-
   try {
-    // ---------------------------
-    // New OpenAI Responses API
-    // ---------------------------
-    const completion = await client.responses.create({
+    const response = await client.responses.create({
       model: "gpt-4o-mini",
       temperature: 0.3,
-      input: `
-You are a medical triage assistant for low-resource African communities.
+      input: [
+        {
+          role: "system",
+          content:
+            "You are a clinical triage assistant. Only return STRICT JSON. No explanations outside JSON."
+        },
+        {
+          role: "user",
+          content: `
+A patient has provided:
 
-You MUST return ONLY valid JSON in this format:
-
-{
-  "risk_scores": {
-    "malaria": 0-1,
-    "diabetes": 0-1,
-    "respiratory_infection": 0-1
-  },
-  "explanation": "Short readable summary for the user."
-}
-
-Patient info:
+Symptoms: ${symptoms}
 Age: ${age}
 Gender: ${gender}
-Location: ${location}
 Duration: ${duration}
-Symptoms: ${symptoms}
-${audioSegment}
-${imagesSegment}
 
-Follow these signals:
-- Malaria: fever, chills, sweating, headache, weakness, body pains
-- Diabetes: frequent urination, thirst, blurred vision, fatigue
-- Respiratory issues: cough, congestion, breathing difficulty, chest tightness
-
-Only output JSON.
-      `,
+Return ONLY valid JSON:
+{
+  "risk_scores": {
+    "malaria": number,
+    "diabetes": number,
+    "respiratory_infection": number
+  },
+  "explanation": "Short medical reasoning (2-4 sentences)"
+}
+`
+        }
+      ]
     });
 
-    let text = completion.output_text.trim();
+    let text = response.output_text;
 
-    // Remove accidental code fences
+    // remove formatting if wrapped in code blocks
     text = text.replace(/^```json/, "").replace(/```$/, "").trim();
 
-    const result = JSON.parse(text);
+    const data = JSON.parse(text);
 
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error("TRIAGE API ERROR:", error);
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error("TRIAGE API ERROR:", err);
 
     return res.status(500).json({
       error: "AI triage failed",
-      details: error.message,
+      details: err.message
     });
   }
 }
